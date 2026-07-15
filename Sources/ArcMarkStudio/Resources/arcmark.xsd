@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="arcmark">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="diagram">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="nodes"><xs:complexType><xs:sequence>
+                <xs:element name="node" maxOccurs="unbounded"><xs:complexType>
+                  <xs:sequence><xs:element name="field" minOccurs="0" maxOccurs="unbounded"><xs:complexType><xs:attribute name="name" type="xs:string" use="required"/><xs:attribute name="type" type="xs:string" use="required"/></xs:complexType></xs:element></xs:sequence>
+                  <xs:attribute name="id" type="xs:ID" use="required"/><xs:attribute name="name" type="xs:string" use="required"/><xs:attribute name="kind" use="required"><xs:simpleType><xs:restriction base="xs:string"><xs:enumeration value="entity"/><xs:enumeration value="service"/><xs:enumeration value="event"/></xs:restriction></xs:simpleType></xs:attribute><xs:attribute name="x" type="xs:decimal" use="required"/><xs:attribute name="y" type="xs:decimal" use="required"/>
+                </xs:complexType></xs:element>
+              </xs:sequence></xs:complexType></xs:element>
+              <xs:element name="relationships"><xs:complexType><xs:sequence>
+                <xs:element name="relationship" minOccurs="0" maxOccurs="unbounded"><xs:complexType><xs:attribute name="from" type="xs:IDREF" use="required"/><xs:attribute name="to" type="xs:IDREF" use="required"/><xs:attribute name="type" type="xs:string" use="required"/></xs:complexType></xs:element>
+              </xs:sequence></xs:complexType></xs:element>
+            </xs:sequence><xs:attribute name="title" type="xs:string" use="required"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence><xs:attribute name="version" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
