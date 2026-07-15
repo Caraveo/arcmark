@@ -4,6 +4,11 @@
 
 # ArcMark Studio
 
+[![Release v0.2.0](https://img.shields.io/badge/release-v0.2.0-5B46E5?style=flat-square)](https://github.com/Caraveo/arcmark/releases/tag/v0.2.0)
+![ArcMark Standard v1.0.0](https://img.shields.io/badge/ArcMark%20Standard-v1.0.0-0F9DDE?style=flat-square)
+![macOS native](https://img.shields.io/badge/platform-macOS-111111?style=flat-square&logo=apple)
+![Swift build](https://img.shields.io/badge/build-swift%20build-F05138?style=flat-square&logo=swift&logoColor=white)
+
 ArcMark Studio is a native macOS workspace for designing systems as connected, portable models—not disposable drawings.
 
 ## Universal System Design
@@ -24,6 +29,18 @@ An ArcMark document stores the things a system needs to communicate:
 - Canvas coordinates for editing without making presentation layout part of the model.
 
 Because the model is plain structured data, the same `.arc` file can power a native editor, a documentation site, an API workflow, or automated analysis.
+
+Every document begins with the ArcMark declaration and standard version:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<arcmark version="1.0.0">
+  <diagram title="Commerce Domain">
+    <nodes />
+    <relationships />
+  </diagram>
+</arcmark>
+```
 
 ## ArcMark Studio
 
@@ -77,6 +94,8 @@ svg = diagram.to_svg()
 See [`packages/arcmark-python`](packages/arcmark-python) for the API and CLI.
 
 ## Run ArcMark Studio
+
+**Current app version:** ArcMark Studio v0.2.0 · **Current document standard:** ArcMark Standard v1.0.0
 
 ```bash
 swift run
