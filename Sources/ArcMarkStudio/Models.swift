@@ -40,6 +40,7 @@ final class DiagramStore: ObservableObject {
         }
         selectedID = id
     }
+    func extractLayout() -> ExtractLayout { ExtractLayout(title: title, nodes: nodes, relationships: relationships) }
     func update(_ node: DiagramNode) { guard let i = nodes.firstIndex(where: {$0.id == node.id}) else { return }; nodes[i] = node }
     func deleteSelected() { guard let id = selectedID else { return }; nodes.removeAll {$0.id == id}; relationships.removeAll {$0.from == id || $0.to == id}; selectedID = nil }
     func xml() -> String {

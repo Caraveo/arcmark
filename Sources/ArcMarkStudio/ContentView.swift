@@ -4,16 +4,18 @@ import AppKit
 struct ContentView: View {
     @StateObject private var store = DiagramStore()
     @State private var showExport = false
+    @State private var showExtract = false
     var body: some View {
         HSplitView {
             Sidebar(store: store).frame(minWidth: 220, idealWidth: 245, maxWidth: 280)
             VStack(spacing: 0) {
-                Toolbar(store: store, showExport: $showExport)
+                Toolbar(store: store, showExport: $showExport, showExtract: $showExtract)
                 DiagramCanvas(store: store)
             }.frame(minWidth: 650)
             Inspector(store: store).frame(minWidth: 270, idealWidth: 310, maxWidth: 360)
         }
         .sheet(isPresented: $showExport) { ExportSheet(store: store) }
+        .sheet(isPresented: $showExtract) { ExtractSheet(store: store) }
         .background(Color(nsColor: .windowBackgroundColor))
     }
 }
@@ -48,6 +50,7 @@ private struct Sidebar: View {
 private struct Toolbar: View {
     @ObservedObject var store: DiagramStore
     @Binding var showExport: Bool
+    @Binding var showExtract: Bool
     var body: some View {
         HStack(spacing: 14) {
             Text("Diagram canvas").font(.headline)
@@ -62,6 +65,7 @@ private struct Toolbar: View {
             Button { store.zoom = max(0.5, store.zoom - 0.1) } label: { Image(systemName: "minus.magnifyingglass") }.buttonStyle(.plain)
             Text("\(Int(store.zoom * 100))%").font(.caption.monospacedDigit()).foregroundStyle(.secondary).frame(width: 34)
             Button { store.zoom = min(1.6, store.zoom + 0.1) } label: { Image(systemName: "plus.magnifyingglass") }.buttonStyle(.plain)
+            Button { showExtract = true } label: { Label("Extract", systemImage: "rectangle.on.rectangle.angled") }.buttonStyle(.bordered)
             Button { showExport = true } label: { Label("Export .arc", systemImage: "square.and.arrow.up") }.buttonStyle(.borderedProminent).tint(.indigo)
         }.padding(.horizontal, 22).frame(height: 58).background(.bar).overlay(alignment: .bottom) { Divider() }
     }
