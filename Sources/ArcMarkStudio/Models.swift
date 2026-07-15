@@ -27,6 +27,10 @@ final class DiagramStore: ObservableObject {
 
     init() { relationships = [.init(from: nodes[0].id, to: nodes[1].id, type: "places"), .init(from: nodes[1].id, to: nodes[2].id, type: "charges")] }
     func addNode(kind: NodeKind) { let n = DiagramNode(name: "New \(kind.rawValue.capitalized)", kind: kind, position: .init(x: 360, y: 360), fields: []); nodes.append(n); selectedID = n.id }
+    func addRelationship(from: UUID, to: UUID, type: String) {
+        guard from != to, !type.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        relationships.append(.init(from: from, to: to, type: type.trimmingCharacters(in: .whitespacesAndNewlines)))
+    }
     func update(_ node: DiagramNode) { guard let i = nodes.firstIndex(where: {$0.id == node.id}) else { return }; nodes[i] = node }
     func deleteSelected() { guard let id = selectedID else { return }; nodes.removeAll {$0.id == id}; relationships.removeAll {$0.from == id || $0.to == id}; selectedID = nil }
     func xml() -> String {

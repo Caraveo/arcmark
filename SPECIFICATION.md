@@ -45,7 +45,7 @@ The `.arc` suffix identifies an ArcMark diagram, not a generic XML file. The und
 
 `field` is optional and can occur zero or more times under a node. Its `name` and `type` attributes describe a property, operation, or payload item.
 
-`relationships` contains zero or more directed `relationship` elements. `from` and `to` are required ID references to nodes; `type` is a required relationship label such as `places`, `calls`, or `emits`.
+`relationships` contains zero or more directed `relationship` elements. `from` and `to` are required ID references to nodes; `type` is a required relationship label such as `places`, `calls`, or `emits`. Renderers MUST treat `from` as the source and `to` as the destination; the visual direction is shown with an arrowhead at `to`.
 
 ## Compatibility rules
 

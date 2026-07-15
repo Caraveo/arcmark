@@ -4,16 +4,18 @@ import AppKit
 struct ContentView: View {
     @StateObject private var store = DiagramStore()
     @State private var showExport = false
+    @State private var showRelationship = false
     var body: some View {
         HSplitView {
             Sidebar(store: store).frame(minWidth: 220, idealWidth: 245, maxWidth: 280)
             VStack(spacing: 0) {
-                Toolbar(store: store, showExport: $showExport)
+                Toolbar(store: store, showExport: $showExport, showRelationship: $showRelationship)
                 DiagramCanvas(store: store)
             }.frame(minWidth: 650)
             Inspector(store: store).frame(minWidth: 270, idealWidth: 310, maxWidth: 360)
         }
         .sheet(isPresented: $showExport) { ExportSheet(store: store) }
+        .sheet(isPresented: $showRelationship) { RelationshipSheet(store: store) }
         .background(Color(nsColor: .windowBackgroundColor))
     }
 }
@@ -48,12 +50,15 @@ private struct Sidebar: View {
 private struct Toolbar: View {
     @ObservedObject var store: DiagramStore
     @Binding var showExport: Bool
+    @Binding var showRelationship: Bool
     var body: some View {
         HStack(spacing: 14) {
             Text("Diagram canvas").font(.headline)
             Spacer()
             Menu { ForEach(NodeKind.allCases) { kind in Button("Add \(kind.rawValue.capitalized)") { store.addNode(kind: kind) } } } label: { Label("Add node", systemImage: "plus") }
                 .menuStyle(.borderlessButton)
+            Button { showRelationship = true } label: { Label("Connect", systemImage: "arrowshape.turn.up.right.fill") }
+                .disabled(store.nodes.count < 2)
             Divider().frame(height: 20)
             Button { store.zoom = max(0.5, store.zoom - 0.1) } label: { Image(systemName: "minus.magnifyingglass") }.buttonStyle(.plain)
             Text("\(Int(store.zoom * 100))%").font(.caption.monospacedDigit()).foregroundStyle(.secondary).frame(width: 34)
@@ -72,7 +77,7 @@ private struct DiagramCanvas: View {
                     let step: CGFloat = 24
                     for x in stride(from: 0, through: size.width, by: step) { context.stroke(Path(CGRect(x: x, y: 0, width: 0.5, height: size.height)), with: .color(.gray.opacity(0.12))) }
                     for y in stride(from: 0, through: size.height, by: step) { context.stroke(Path(CGRect(x: 0, y: y, width: size.width, height: 0.5)), with: .color(.gray.opacity(0.12))) }
-                    for r in store.relationships { guard let a = store.nodes.first(where: {$0.id == r.from}), let b = store.nodes.first(where: {$0.id == r.to}) else {continue}; let start = CGPoint(x: a.position.x + 148, y: a.position.y + 52), end = CGPoint(x: b.position.x, y: b.position.y + 52); var p = Path(); p.move(to: start); p.addCurve(to: end, control1: .init(x: start.x + 90, y: start.y), control2: .init(x: end.x - 90, y: end.y)); context.stroke(p, with: .color(.indigo.opacity(0.65)), style: .init(lineWidth: 2, dash: [6, 5])); let mid = CGPoint(x: (start.x+end.x)/2, y: (start.y+end.y)/2 - 14); context.draw(Text(r.type).font(.caption.weight(.medium)).foregroundColor(.secondary), at: mid) }
+                    for r in store.relationships { guard let a = store.nodes.first(where: {$0.id == r.from}), let b = store.nodes.first(where: {$0.id == r.to}) else {continue}; let start = CGPoint(x: a.position.x + 148, y: a.position.y + 52), end = CGPoint(x: b.position.x, y: b.position.y + 52); let c1 = CGPoint(x: start.x + 90, y: start.y), c2 = CGPoint(x: end.x - 90, y: end.y); var p = Path(); p.move(to: start); p.addCurve(to: end, control1: c1, control2: c2); context.stroke(p, with: .color(.indigo.opacity(0.72)), style: .init(lineWidth: 2.25, dash: [6, 5])); let angle = atan2(end.y - c2.y, end.x - c2.x); let arrow: CGFloat = 10; var head = Path(); head.move(to: end); head.addLine(to: CGPoint(x: end.x - arrow * cos(angle - .pi / 6), y: end.y - arrow * sin(angle - .pi / 6))); head.addLine(to: CGPoint(x: end.x - arrow * cos(angle + .pi / 6), y: end.y - arrow * sin(angle + .pi / 6))); head.closeSubpath(); context.fill(head, with: .color(.indigo)); let mid = CGPoint(x: (start.x+end.x)/2, y: (start.y+end.y)/2 - 14); context.draw(Text(r.type).font(.caption.weight(.medium)).foregroundColor(.indigo), at: mid) }
                 }
                 .contentShape(Rectangle()).onTapGesture { store.selectedID = nil }
                 ForEach(store.nodes) { node in NodeCard(node: node, isSelected: store.selectedID == node.id)
@@ -126,4 +131,23 @@ private struct ExportSheet: View {
         TextEditor(text: .constant(store.xml())).font(.system(.caption, design: .monospaced)).padding(8).background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
         HStack { Button { NSPasteboard.general.clearContents(); NSPasteboard.general.setString(store.xml(), forType: .string) } label: { Label("Copy document", systemImage: "doc.on.doc") }; Spacer(); Button { let panel = NSSavePanel(); panel.nameFieldStringValue = "\(store.title).arc"; panel.allowedContentTypes = [.arcMark]; panel.begin { if $0 == .OK, let url = panel.url { try? store.xml().write(to: url, atomically: true, encoding: .utf8) } } } label: { Label("Save .arc", systemImage: "square.and.arrow.down") }.buttonStyle(.borderedProminent) }
     }.padding(24).frame(width: 700, height: 560) }
+}
+
+private struct RelationshipSheet: View {
+    @ObservedObject var store: DiagramStore
+    @Environment(\.dismiss) private var dismiss
+    @State private var fromID: UUID?
+    @State private var toID: UUID?
+    @State private var label = "relates to"
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            HStack { VStack(alignment: .leading, spacing: 4) { Text("Create relationship").font(.title2.weight(.bold)); Text("The arrow flows from source to destination.").foregroundStyle(.secondary) }; Spacer(); Button("Cancel") { dismiss() } }
+            Form {
+                Picker("From", selection: $fromID) { Text("Choose source").tag(UUID?.none); ForEach(store.nodes) { Text($0.name).tag(UUID?.some($0.id)) } }
+                Picker("To", selection: $toID) { Text("Choose destination").tag(UUID?.none); ForEach(store.nodes) { Text($0.name).tag(UUID?.some($0.id)) } }
+                TextField("Relationship", text: $label)
+            }.formStyle(.grouped)
+            HStack { Spacer(); Button("Create arrow") { if let fromID, let toID { store.addRelationship(from: fromID, to: toID, type: label); dismiss() } }.buttonStyle(.borderedProminent).disabled(fromID == nil || toID == nil || fromID == toID || label.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) }
+        }.padding(24).frame(width: 440)
+    }
 }
