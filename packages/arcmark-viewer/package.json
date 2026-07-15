@@ -5,7 +5,41 @@
   "type": "module",
   "main": "./src/arcmark-viewer.js",
   "exports": "./src/arcmark-viewer.js",
-  "files": ["src", "README.md", "LICENSE"],
-  "keywords": ["arcmark", "diagram", "uml", "web-component", "viewer"],
-  "license": "MIT"
+  "scripts": {
+    "test": "node --test"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "arcmark",
+    "architecture",
+    "diagram",
+    "system-design",
+    "uml",
+    "web-component",
+    "viewer"
+  ],
+  "license": "MIT",
+  "author": "Caraveo",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Caraveo/arcmark.git",
+    "directory": "packages/arcmark-viewer"
+  },
+  "bugs": {
+    "url": "https://github.com/Caraveo/arcmark/issues"
+  },
+  "homepage": "https://github.com/Caraveo/arcmark#readme",
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "linkedom": "^0.18.13"
+  }
 }

@@ -10,7 +10,7 @@ ArcMark Studio is where a team authors the system model; this component is how t
 npm install @arcmark/viewer
 ```
 
-Until it is published, install it from this repository:
+For local development, install it from this repository:
 
 ```bash
 npm install /path/to/Universal\ Systems\ Design/packages/arcmark-viewer
@@ -37,3 +37,12 @@ document.querySelector("arcmark-diagram").data = arcDocumentText;
 The component emits `arcmark-load` with the parsed diagram model and `arcmark-error` when fetching or parsing fails. This makes it easy to connect a diagram to surrounding application UI, analytics, or documentation metadata.
 
 It is a browser component, so use it in client-side code in Next.js, Vite, Express-rendered pages, Electron, and similar Node.js projects. For server-side rendering, load it only after the page reaches the browser. For a clean relationship-first export, create a **System Design Overview** from ArcMark Studio and export SVG, PNG, JPEG, or PDF.
+
+## Verify the package
+
+```bash
+npm test
+npm pack --dry-run
+```
+
+The test suite exercises ArcMark XML parsing with a browser-compatible DOM implementation. The published package itself remains dependency-free at runtime.

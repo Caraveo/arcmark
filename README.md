@@ -75,6 +75,8 @@ Export the overview as SVG, PNG, JPEG, or PDF. SVG and PNG use transparent backg
 
 The Node.js package provides a small, dependency-free browser web component for displaying a generic ArcMark document in any web project. Use it in a Next.js, Vite, Express, Electron, or static site front end to load a `.arc` file by URL or pass XML directly. It is intentionally read-only: ArcMark Studio is where the model is authored, and the viewer is where it is shared.
 
+Install the public package with `npm install @arcmark/viewer`.
+
 ```js
 import "@arcmark/viewer";
 
