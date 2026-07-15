@@ -1,0 +1,11 @@
+{
+  "name": "@arcmark/viewer",
+  "version": "1.0.0",
+  "description": "A dependency-free web component for displaying ArcMark .arc diagrams.",
+  "type": "module",
+  "main": "./src/arcmark-viewer.js",
+  "exports": "./src/arcmark-viewer.js",
+  "files": ["src", "README.md", "LICENSE"],
+  "keywords": ["arcmark", "diagram", "uml", "web-component", "viewer"],
+  "license": "MIT"
+}
