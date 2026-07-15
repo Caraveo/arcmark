@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import AppKit
 
 enum NodeKind: String, CaseIterable, Identifiable { case entity, service, event; var id: String { rawValue }
     var color: Color { switch self { case .entity: .cyan; case .service: .purple; case .event: .orange } }
@@ -41,6 +42,15 @@ final class DiagramStore: ObservableObject {
         selectedID = id
     }
     func extractLayout() -> ExtractLayout { ExtractLayout(title: title, nodes: nodes, relationships: relationships) }
+    func saveArc() {
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = "\(title).arc"
+        panel.allowedContentTypes = [.arcMark]
+        panel.begin { response in
+            guard response == .OK, let url = panel.url else { return }
+            try? self.xml().write(to: url, atomically: true, encoding: .utf8)
+        }
+    }
     func update(_ node: DiagramNode) { guard let i = nodes.firstIndex(where: {$0.id == node.id}) else { return }; nodes[i] = node }
     func deleteSelected() { guard let id = selectedID else { return }; nodes.removeAll {$0.id == id}; relationships.removeAll {$0.from == id || $0.to == id}; selectedID = nil }
     func xml() -> String {

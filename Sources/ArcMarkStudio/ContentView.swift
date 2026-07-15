@@ -27,7 +27,7 @@ private struct Sidebar: View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 5) {
                 HStack(spacing: 8) { Image("arcmark-logo", bundle: .module).resizable().scaledToFit().frame(width: 24, height: 24); Text("ARCMARK").font(.caption.weight(.bold)).tracking(2).foregroundStyle(.secondary) }
-                Text(store.title).font(.title3.weight(.semibold))
+                TextField("Diagram name", text: $store.title).textFieldStyle(.plain).font(.title3.weight(.semibold))
             }.padding(20)
             Divider()
             Text("DIAGRAM CONTENTS").font(.caption2.weight(.bold)).foregroundStyle(.secondary).padding(.horizontal, 16).padding(.top, 18)
@@ -67,7 +67,7 @@ private struct Toolbar: View {
             Text("\(Int(store.zoom * 100))%").font(.caption.monospacedDigit()).foregroundStyle(.secondary).frame(width: 34)
             Button { store.zoom = min(1.6, store.zoom + 0.1) } label: { Image(systemName: "plus.magnifyingglass") }.buttonStyle(.plain)
             Button { showExtract = true } label: { Label("Extract", systemImage: "rectangle.on.rectangle.angled") }.buttonStyle(.bordered)
-            Button { showExport = true } label: { Label("Export .arc", systemImage: "square.and.arrow.up") }.buttonStyle(.borderedProminent).tint(.indigo)
+            Button { store.saveArc() } label: { Label("Save As .arc", systemImage: "square.and.arrow.down") }.buttonStyle(.borderedProminent).tint(.indigo)
         }.padding(.horizontal, 22).frame(height: 58).background(.bar).overlay(alignment: .bottom) { Divider() }
     }
 }
