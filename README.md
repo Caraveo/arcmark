@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="Assets/arcmark-logo.png" width="148" alt="ArcMark logo">
+  <img src="Assets/arcmark-logo.png" width="100%" alt="ArcMark logo">
 </p>
 
 # ArcMark Studio
