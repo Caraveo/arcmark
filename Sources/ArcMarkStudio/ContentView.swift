@@ -26,7 +26,7 @@ private struct Sidebar: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 5) {
-                HStack(spacing: 8) { Image("arcmark-logo", bundle: .module).resizable().scaledToFit().frame(width: 24, height: 24); Text("ARCMARK").font(.caption.weight(.bold)).tracking(2).foregroundStyle(.secondary) }
+                HStack(spacing: 8) { Image("arcmark-brand-logo", bundle: .module).resizable().scaledToFit().frame(width: 24, height: 24); Text("ARCMARK").font(.caption.weight(.bold)).tracking(2).foregroundStyle(.secondary) }
                 TextField("Diagram name", text: $store.title).textFieldStyle(.plain).font(.title3.weight(.semibold))
             }.padding(20)
             Divider()
