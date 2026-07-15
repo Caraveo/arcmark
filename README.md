@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="Assets/arcmark-logo.png" width="148" alt="ArcMark logo">
+</p>
+
 # ArcMark Studio
 
 ArcMark Studio is a native macOS SwiftUI editor for UML-inspired system diagrams. It models entities, services, events, fields, and directed relationships on a draggable canvas.
