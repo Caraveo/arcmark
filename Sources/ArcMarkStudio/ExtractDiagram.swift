@@ -39,36 +39,21 @@ struct ExtractLayout {
         var groups = Dictionary(grouping: sorted, by: { depth[$0.id] ?? 0 })
         let levels = groups.keys.sorted()
         let incomingSources = Dictionary(grouping: relationships, by: \.to)
-        let outgoingTargets = Dictionary(grouping: relationships, by: \.from)
-
-        // A small Sugiyama-style barycentric pass: order each layer by the rows of
-        // its neighbors. This preserves flows such as Customer → Order above
-        // New Service → New Entity instead of alphabetically crossing them.
-        for _ in 0..<4 {
-            for level in levels.dropFirst() {
-                guard let current = groups[level] else { continue }
-                let previousRows = Dictionary(uniqueKeysWithValues: levels.filter { $0 < level }.flatMap { groups[$0] ?? [] }.enumerated().map { ($0.element.id, Double($0.offset)) })
-                groups[level] = current.enumerated().sorted { left, right in
-                    func score(_ node: DiagramNode, fallback: Int) -> Double {
-                        let rows = (incomingSources[node.id] ?? []).compactMap { previousRows[$0.from] }
-                        return rows.isEmpty ? Double(fallback) : rows.reduce(0, +) / Double(rows.count)
-                    }
-                    let a = score(left.element, fallback: left.offset), b = score(right.element, fallback: right.offset)
-                    return a == b ? left.element.name < right.element.name : a < b
-                }.map(\.element)
-            }
-            for level in levels.dropLast().reversed() {
-                guard let current = groups[level] else { continue }
-                let nextRows = Dictionary(uniqueKeysWithValues: levels.filter { $0 > level }.flatMap { groups[$0] ?? [] }.enumerated().map { ($0.element.id, Double($0.offset)) })
-                groups[level] = current.enumerated().sorted { left, right in
-                    func score(_ node: DiagramNode, fallback: Int) -> Double {
-                        let rows = (outgoingTargets[node.id] ?? []).compactMap { nextRows[$0.to] }
-                        return rows.isEmpty ? Double(fallback) : rows.reduce(0, +) / Double(rows.count)
-                    }
-                    let a = score(left.element, fallback: left.offset), b = score(right.element, fallback: right.offset)
-                    return a == b ? left.element.name < right.element.name : a < b
-                }.map(\.element)
-            }
+        // Stable forward barycentric ordering. We deliberately do not perform a
+        // backward pass: that pass can reverse an already-correct source order
+        // and reintroduce crossings. Each destination follows the row order of
+        // the sources immediately to its left; unused rows remain empty space.
+        for level in levels.dropFirst() {
+            guard let current = groups[level] else { continue }
+            let previousRows = Dictionary(uniqueKeysWithValues: (groups[level - 1] ?? []).enumerated().map { ($0.element.id, Double($0.offset)) })
+            groups[level] = current.enumerated().sorted { left, right in
+                func score(_ node: DiagramNode, fallback: Int) -> Double {
+                    let rows = (incomingSources[node.id] ?? []).compactMap { previousRows[$0.from] }
+                    return rows.isEmpty ? Double(fallback) : rows.reduce(0, +) / Double(rows.count)
+                }
+                let a = score(left.element, fallback: left.offset), b = score(right.element, fallback: right.offset)
+                return a == b ? left.element.name < right.element.name : a < b
+            }.map(\.element)
         }
         var positioned: [ExtractNode] = []
         for level in groups.keys.sorted() {
