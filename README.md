@@ -8,7 +8,8 @@
 [![Swift](https://img.shields.io/badge/Swift-5.9-orange.svg)](https://swift.org/)
 [![SwiftUI](https://img.shields.io/badge/SwiftUI-4.0-blue.svg)](https://developer.apple.com/xcode/swiftui/)
 [![Version](https://img.shields.io/badge/version-0.3.0-blue.svg)](https://github.com/Caraveo/arcmark/releases)
-[![Commit](https://img.shields.io/badge/commit-v0.3.0-blue.svg)](https://github.com/Caraveo/arcmark/commits/main)
+[![ArcMark Standard](https://img.shields.io/badge/ArcMark%20Standard-v1.0.0-6D4AFF.svg)](SPECIFICATION.md)
+[![XML](https://img.shields.io/badge/XML-1.0-0060AC.svg)](https://www.w3.org/TR/xml/)
 [![Status](https://img.shields.io/badge/status-PREALPHA-red.svg)](https://github.com/Caraveo/arcmark)
 
 ArcMark Studio is a native macOS workspace for designing systems as connected, portable models—not disposable drawings.
