@@ -6,6 +6,10 @@
 
 ArcMark Studio is a native macOS SwiftUI editor for UML-inspired system diagrams. It models entities, services, events, fields, and directed relationships on a draggable canvas.
 
+## Canvas editor
+
+![ArcMark Studio canvas editor](Assets/arcmark-studio-canvas.png)
+
 ## Run
 
 ```bash
