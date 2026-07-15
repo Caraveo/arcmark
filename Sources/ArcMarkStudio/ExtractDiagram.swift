@@ -11,6 +11,7 @@ struct ExtractNode: Identifiable {
 struct ExtractLoop: Identifiable {
     let members: Set<UUID>
     let frame: CGRect
+    let hiddenRelationID: UUID
     let id = UUID()
 }
 
@@ -84,7 +85,14 @@ struct ExtractLayout {
         self.loops = components.compactMap { component in
             let rects = component.compactMap { positions[$0].map { CGRect(x: $0.x, y: $0.y, width: 180, height: 70) } }
             guard var frame = rects.first else { return nil }; for rect in rects.dropFirst() { frame = frame.union(rect) }
-            return ExtractLoop(members: component, frame: frame.insetBy(dx: -26, dy: -30))
+            // The enclosure replaces precisely one closing relation: the one
+            // leaving the rightmost (then lowest) member. All other internal
+            // relations remain visible, so the loop's flow is still readable.
+            guard let closing = relationships.filter({ component.contains($0.from) && component.contains($0.to) }).max(by: {
+                let a = positions[$0.from] ?? .zero, b = positions[$1.from] ?? .zero
+                return a.x == b.x ? a.y < b.y : a.x < b.x
+            }) else { return nil }
+            return ExtractLoop(members: component, frame: frame.insetBy(dx: -26, dy: -30), hiddenRelationID: closing.id)
         }
         let maxX = positioned.map { $0.position.x + 180 }.max() ?? 360
         let maxY = positioned.map { $0.position.y + 70 }.max() ?? 220
@@ -95,18 +103,18 @@ struct ExtractLayout {
         func escape(_ string: String) -> String { string.replacingOccurrences(of: "&", with: "&amp;").replacingOccurrences(of: "<", with: "&lt;").replacingOccurrences(of: "\"", with: "&quot;") }
         let lookup = Dictionary(uniqueKeysWithValues: nodes.map { ($0.id, $0) })
         let edges = relationships.compactMap { relation -> String? in
-            guard !loops.contains(where: { $0.members.contains(relation.from) && $0.members.contains(relation.to) }) else { return nil }
+            guard !loops.contains(where: { $0.hiddenRelationID == relation.id }) else { return nil }
             guard let source = lookup[relation.from], let target = lookup[relation.to] else { return nil }
             let x1 = source.position.x + 180, y1 = source.position.y + 35, x2 = target.position.x, y2 = target.position.y + 35
             return "<path class=\"edge\" marker-end=\"url(#arrow)\" d=\"M\(x1) \(y1) C\(x1 + 48) \(y1), \(x2 - 48) \(y2), \(x2) \(y2)\"/><text class=\"label\" x=\"\((x1+x2)/2)\" y=\"\((y1+y2)/2-9)\">\(escape(relation.type))</text>"
         }.joined()
-        let loopAreas = loops.map { "<rect class=\"loop\" x=\"\($0.frame.minX)\" y=\"\($0.frame.minY)\" width=\"\($0.frame.width)\" height=\"\($0.frame.height)\" rx=\"12\"/><text class=\"loopLabel\" x=\"\($0.frame.minX + 12)\" y=\"\($0.frame.minY + 18)\">LOOP</text>" }.joined()
+        let loopAreas = loops.map { "<rect class=\"loop\" x=\"\($0.frame.minX)\" y=\"\($0.frame.minY)\" width=\"\($0.frame.width)\" height=\"\($0.frame.height)\" rx=\"12\"/>" }.joined()
         let cards = nodes.map { node in "<rect class=\"node\" x=\"\(node.position.x)\" y=\"\(node.position.y)\" width=\"180\" height=\"70\" rx=\"3\"/><text class=\"name\" x=\"\(node.position.x + 90)\" y=\"\(node.position.y + 42)\">\(escape(node.node.name))</text>" }.joined()
         return """
         <?xml version="1.0" encoding="UTF-8"?>
         <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"\(Int(size.width))\" height=\"\(Int(size.height))\" viewBox=\"0 0 \(Int(size.width)) \(Int(size.height))\">
           <defs><marker id=\"arrow\" viewBox=\"0 0 10 10\" refX=\"8\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto\"><path d=\"M 0 0 L 10 5 L 0 10 z\" fill=\"#64748b\"/></marker></defs>
-          <style>.edge{fill:none;stroke:#64748b;stroke-width:2}.loop{fill:#f8fafc;fill-opacity:.45;stroke:#94a3b8;stroke-width:1.5;stroke-dasharray:6 5}.loopLabel{font:700 10px -apple-system,BlinkMacSystemFont,sans-serif;fill:#64748b}.node{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5}.name{font:600 15px -apple-system,BlinkMacSystemFont,sans-serif;fill:#0f172a;text-anchor:middle}.label{font:12px -apple-system,BlinkMacSystemFont,sans-serif;fill:#475569;text-anchor:middle}</style>
+          <style>.edge{fill:none;stroke:#64748b;stroke-width:2}.loop{fill:#f8fafc;fill-opacity:.45;stroke:#94a3b8;stroke-width:1.5;stroke-dasharray:6 5}.node{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5}.name{font:600 15px -apple-system,BlinkMacSystemFont,sans-serif;fill:#0f172a;text-anchor:middle}.label{font:12px -apple-system,BlinkMacSystemFont,sans-serif;fill:#475569;text-anchor:middle}</style>
           \(loopAreas)\(edges)\(cards)
         </svg>
         """
@@ -121,9 +129,9 @@ final class ExtractRenderView: NSView {
     override func draw(_ dirtyRect: NSRect) {
         if transparentBackground { NSGraphicsContext.current?.cgContext.clear(bounds) } else { NSColor.white.setFill(); bounds.fill() }
         let lookup = Dictionary(uniqueKeysWithValues: layout.nodes.map { ($0.id, $0) })
-        for loop in layout.loops { NSColor(calibratedWhite: 0.95, alpha: 0.55).setFill(); NSBezierPath(roundedRect: loop.frame, xRadius: 12, yRadius: 12).fill(); let border = NSBezierPath(roundedRect: loop.frame, xRadius: 12, yRadius: 12); border.setLineDash([6, 5], count: 2, phase: 0); NSColor.slate.setStroke(); border.stroke(); ("LOOP" as NSString).draw(at: .init(x: loop.frame.minX + 12, y: loop.frame.minY + 10), withAttributes: [.font: NSFont.systemFont(ofSize: 10, weight: .bold), .foregroundColor: NSColor.slate]) }
+        for loop in layout.loops { NSColor(calibratedWhite: 0.95, alpha: 0.55).setFill(); NSBezierPath(roundedRect: loop.frame, xRadius: 12, yRadius: 12).fill(); let border = NSBezierPath(roundedRect: loop.frame, xRadius: 12, yRadius: 12); border.setLineDash([6, 5], count: 2, phase: 0); NSColor.slate.setStroke(); border.stroke() }
         for relation in layout.relationships {
-            guard !layout.loops.contains(where: { $0.members.contains(relation.from) && $0.members.contains(relation.to) }) else { continue }
+            guard !layout.loops.contains(where: { $0.hiddenRelationID == relation.id }) else { continue }
             guard let source = lookup[relation.from], let target = lookup[relation.to] else { continue }
             let start = CGPoint(x: source.position.x + 180, y: source.position.y + 35), end = CGPoint(x: target.position.x, y: target.position.y + 35)
             let path = NSBezierPath(); path.move(to: start); path.curve(to: end, controlPoint1: .init(x: start.x + 48, y: start.y), controlPoint2: .init(x: end.x - 48, y: end.y)); NSColor.slate.setStroke(); path.lineWidth = 2; path.stroke()
@@ -167,8 +175,8 @@ private struct ExtractPreview: View {
     var body: some View {
         Canvas { context, _ in
             let lookup = Dictionary(uniqueKeysWithValues: layout.nodes.map { ($0.id, $0) })
-            for loop in layout.loops { context.fill(Path(roundedRect: loop.frame, cornerRadius: 12), with: .color(.gray.opacity(0.10))); context.stroke(Path(roundedRect: loop.frame, cornerRadius: 12), with: .color(.gray.opacity(0.7)), style: .init(lineWidth: 1.5, dash: [6, 5])); context.draw(Text("LOOP").font(.caption2.weight(.bold)).foregroundColor(.secondary), at: .init(x: loop.frame.minX + 27, y: loop.frame.minY + 12)) }
-            for relation in layout.relationships { guard !layout.loops.contains(where: { $0.members.contains(relation.from) && $0.members.contains(relation.to) }), let source = lookup[relation.from], let target = lookup[relation.to] else { continue }; let start = CGPoint(x: source.position.x + 180, y: source.position.y + 35), end = CGPoint(x: target.position.x, y: target.position.y + 35); var path = Path(); path.move(to: start); path.addCurve(to: end, control1: .init(x: start.x + 48, y: start.y), control2: .init(x: end.x - 48, y: end.y)); context.stroke(path, with: .color(.secondary), lineWidth: 2); let angle = atan2(end.y - start.y, end.x - start.x); var arrow = Path(); arrow.move(to: end); arrow.addLine(to: .init(x: end.x - 10 * cos(angle - .pi / 6), y: end.y - 10 * sin(angle - .pi / 6))); arrow.addLine(to: .init(x: end.x - 10 * cos(angle + .pi / 6), y: end.y - 10 * sin(angle + .pi / 6))); arrow.closeSubpath(); context.fill(arrow, with: .color(.secondary)); context.draw(Text(relation.type).font(.caption).foregroundColor(.secondary), at: .init(x: (start.x + end.x) / 2, y: (start.y + end.y) / 2 - 10)) }
+            for loop in layout.loops { context.fill(Path(roundedRect: loop.frame, cornerRadius: 12), with: .color(.gray.opacity(0.10))); context.stroke(Path(roundedRect: loop.frame, cornerRadius: 12), with: .color(.gray.opacity(0.7)), style: .init(lineWidth: 1.5, dash: [6, 5])) }
+            for relation in layout.relationships { guard !layout.loops.contains(where: { $0.hiddenRelationID == relation.id }), let source = lookup[relation.from], let target = lookup[relation.to] else { continue }; let start = CGPoint(x: source.position.x + 180, y: source.position.y + 35), end = CGPoint(x: target.position.x, y: target.position.y + 35); var path = Path(); path.move(to: start); path.addCurve(to: end, control1: .init(x: start.x + 48, y: start.y), control2: .init(x: end.x - 48, y: end.y)); context.stroke(path, with: .color(.secondary), lineWidth: 2); let angle = atan2(end.y - start.y, end.x - start.x); var arrow = Path(); arrow.move(to: end); arrow.addLine(to: .init(x: end.x - 10 * cos(angle - .pi / 6), y: end.y - 10 * sin(angle - .pi / 6))); arrow.addLine(to: .init(x: end.x - 10 * cos(angle + .pi / 6), y: end.y - 10 * sin(angle + .pi / 6))); arrow.closeSubpath(); context.fill(arrow, with: .color(.secondary)); context.draw(Text(relation.type).font(.caption).foregroundColor(.secondary), at: .init(x: (start.x + end.x) / 2, y: (start.y + end.y) / 2 - 10)) }
             for item in layout.nodes { let rect = CGRect(x: item.position.x, y: item.position.y, width: 180, height: 70); context.fill(Path(roundedRect: rect, cornerRadius: 3), with: .color(.white)); context.stroke(Path(roundedRect: rect, cornerRadius: 3), with: .color(.gray.opacity(0.7)), lineWidth: 1.5); context.draw(Text(item.node.name).font(.headline.weight(.semibold)).foregroundColor(.primary), at: .init(x: rect.midX, y: rect.midY)) }
         }.background(.white)
     }
