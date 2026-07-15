@@ -7,8 +7,8 @@
 [![macOS](https://img.shields.io/badge/platform-macOS-blue.svg)](https://www.apple.com/macos/)
 [![Swift](https://img.shields.io/badge/Swift-5.9-orange.svg)](https://swift.org/)
 [![SwiftUI](https://img.shields.io/badge/SwiftUI-4.0-blue.svg)](https://developer.apple.com/xcode/swiftui/)
-[![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](https://github.com/Caraveo/arcmark/releases)
-[![Commit](https://img.shields.io/badge/commit-v0.2.1-blue.svg)](https://github.com/Caraveo/arcmark/commits/main)
+[![Version](https://img.shields.io/badge/version-0.3.0-blue.svg)](https://github.com/Caraveo/arcmark/releases)
+[![Commit](https://img.shields.io/badge/commit-v0.3.0-blue.svg)](https://github.com/Caraveo/arcmark/commits/main)
 [![Status](https://img.shields.io/badge/status-PREALPHA-red.svg)](https://github.com/Caraveo/arcmark)
 
 ArcMark Studio is a native macOS workspace for designing systems as connected, portable models—not disposable drawings.
@@ -97,7 +97,7 @@ See [`packages/arcmark-python`](packages/arcmark-python) for the API and CLI.
 
 ## Run ArcMark Studio
 
-**Current app version:** ArcMark Studio v0.2.0 · **Current document standard:** ArcMark Standard v1.0.0
+**Current app version:** ArcMark Studio v0.3.0 · **Current document standard:** ArcMark Standard v1.0.0
 
 ```bash
 swift run
