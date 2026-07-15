@@ -88,7 +88,7 @@ private struct DiagramCanvas: View {
                     .gesture(DragGesture().onChanged { value in var changed = node; changed.position = CGPoint(x: value.location.x - 74, y: value.location.y - 52); store.update(changed) })
                     .onTapGesture { store.handleNodeTap(node.id) }
                 }
-                VStack { Spacer(); HStack { Text(store.connectionSourceID == nil ? "Select a node, then Connect to link it" : "Now select the destination node").font(.caption.weight(store.connectionSourceID == nil ? .regular : .semibold)).foregroundStyle(store.connectionSourceID == nil ? .secondary : .orange).padding(10).background(.regularMaterial, in: Capsule()); Spacer() } }.padding(18)
+                VStack { Spacer(); HStack { Text(store.connectionSourceID == nil ? "Select a node, then Connect to link it" : "Now select the destination node").font(.caption.weight(store.connectionSourceID == nil ? .regular : .semibold)).foregroundStyle(store.connectionSourceID == nil ? Color.secondary : Color.orange).padding(10).background(.regularMaterial, in: Capsule()); Spacer() } }.padding(18)
             }.scaleEffect(store.zoom, anchor: .topLeading)
         }.background(Color(nsColor: .controlBackgroundColor))
     }
