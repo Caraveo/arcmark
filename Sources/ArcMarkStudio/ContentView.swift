@@ -119,9 +119,27 @@ private struct NodeInspector: View {
     init(store: DiagramStore, node: DiagramNode) { self.store = store; self.node = node; _edited = State(initialValue: node) }
     var body: some View { Form {
         Section("Element") { TextField("Name", text: $edited.name); Picker("Kind", selection: $edited.kind) { ForEach(NodeKind.allCases) { Text($0.rawValue.capitalized).tag($0) } } }
-        Section("Fields") { ForEach($edited.fields) { $field in HStack { TextField("Name", text: $field.name); TextField("Type", text: $field.type).frame(width: 78) } }.onDelete { edited.fields.remove(atOffsets: $0) }; Button { edited.fields.append(.init(name: "fieldName", type: "String")) } label: { Label("Add field", systemImage: "plus") } }
-        Section { Button("Apply changes") { store.update(edited) }.buttonStyle(.borderedProminent); Button("Delete element", role: .destructive) { store.deleteSelected() } }
-    }.formStyle(.grouped).onChange(of: node) { _, newValue in edited = newValue } }
+        Section("Fields") { ForEach($edited.fields) { $field in FieldEditor(field: $field) { edited.fields.removeAll { $0.id == field.id } } }; Button { edited.fields.append(.init(name: "fieldName", type: "String")) } label: { Label("Add field", systemImage: "plus") } }
+        Section { Button("Delete element", role: .destructive) { store.deleteSelected() } }
+    }.formStyle(.grouped).onChange(of: edited) { _, value in store.update(value) }.onChange(of: node) { _, newValue in edited = newValue } }
+}
+
+private struct FieldEditor: View {
+    @Binding var field: Field
+    let remove: () -> Void
+    @State private var isHovering = false
+    var body: some View {
+        HStack(spacing: 6) {
+            TextField("Name", text: $field.name)
+            TextField("Type", text: $field.type).frame(width: 78)
+            Button(action: remove) { Image(systemName: "trash").font(.caption.weight(.semibold)) }
+                .buttonStyle(.borderless)
+                .foregroundStyle(.red)
+                .opacity(isHovering ? 1 : 0)
+                .accessibilityLabel("Remove \(field.name)")
+        }
+        .onHover { isHovering = $0 }
+    }
 }
 
 private struct ExportSheet: View {
