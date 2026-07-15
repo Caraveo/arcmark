@@ -16,6 +16,7 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showExport) { ExportSheet(store: store) }
         .sheet(isPresented: $showExtract) { ExtractSheet(store: store) }
+        .onDeleteCommand { store.deleteSelected() }
         .background(Color(nsColor: .windowBackgroundColor))
     }
 }
