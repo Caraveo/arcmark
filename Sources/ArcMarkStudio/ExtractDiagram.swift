@@ -27,46 +27,31 @@ struct ExtractLayout {
         let ids = Set(source.map(\.id))
         var incoming = Dictionary(uniqueKeysWithValues: source.map { ($0.id, 0) })
         var outgoing = Dictionary(uniqueKeysWithValues: source.map { ($0.id, [UUID]()) })
+        var undirected = Dictionary(uniqueKeysWithValues: source.map { ($0.id, [UUID]()) })
         for relation in relationships where ids.contains(relation.from) && ids.contains(relation.to) {
             incoming[relation.to, default: 0] += 1
             outgoing[relation.from, default: []].append(relation.to)
+            undirected[relation.from, default: []].append(relation.to)
+            undirected[relation.to, default: []].append(relation.from)
         }
-        var depth = Dictionary(uniqueKeysWithValues: source.map { ($0.id, 0) })
-        var queue = source.filter { incoming[$0.id] == 0 }.sorted { $0.name < $1.name }.map(\.id)
-        var cursor = 0
-        while cursor < queue.count {
-            let id = queue[cursor]; cursor += 1
-            for child in outgoing[id, default: []] {
-                depth[child] = max(depth[child, default: 0], depth[id, default: 0] + 1)
-                incoming[child, default: 1] -= 1
-                if incoming[child] == 0 { queue.append(child) }
-            }
-        }
-        // Cycles and disconnected diagrams remain deterministic in the first column.
-        let sorted = source.sorted { (depth[$0.id] ?? 0, $0.name) < (depth[$1.id] ?? 0, $1.name) }
-        var groups = Dictionary(grouping: sorted, by: { depth[$0.id] ?? 0 })
-        let levels = groups.keys.sorted()
-        let incomingSources = Dictionary(grouping: relationships, by: \.to)
-        // Stable forward barycentric ordering. We deliberately do not perform a
-        // backward pass: that pass can reverse an already-correct source order
-        // and reintroduce crossings. Each destination follows the row order of
-        // the sources immediately to its left; unused rows remain empty space.
-        for level in levels.dropFirst() {
-            guard let current = groups[level] else { continue }
-            let previousRows = Dictionary(uniqueKeysWithValues: (groups[level - 1] ?? []).enumerated().map { ($0.element.id, Double($0.offset)) })
-            groups[level] = current.enumerated().sorted { left, right in
-                func score(_ node: DiagramNode, fallback: Int) -> Double {
-                    let rows = (incomingSources[node.id] ?? []).compactMap { previousRows[$0.from] }
-                    return rows.isEmpty ? Double(fallback) : rows.reduce(0, +) / Double(rows.count)
-                }
-                let a = score(left.element, fallback: left.offset), b = score(right.element, fallback: right.offset)
-                return a == b ? left.element.name < right.element.name : a < b
-            }.map(\.element)
+        // A group is a weakly connected set of nodes. Each group gets one
+        // unbounded left-to-right lane; groups never share a vertical lane.
+        var componentVisited = Set<UUID>(), groups: [[DiagramNode]] = []
+        let byID = Dictionary(uniqueKeysWithValues: source.map { ($0.id, $0) })
+        for node in source.sorted(by: { $0.name < $1.name }) where !componentVisited.contains(node.id) {
+            var stack = [node.id], component: [DiagramNode] = []; componentVisited.insert(node.id)
+            while let id = stack.popLast() { if let item = byID[id] { component.append(item) }; for next in undirected[id, default: []] where componentVisited.insert(next).inserted { stack.append(next) } }
+            groups.append(component)
         }
         var positioned: [ExtractNode] = []
-        for level in groups.keys.sorted() {
-            for (row, node) in (groups[level] ?? []).enumerated() {
-                positioned.append(ExtractNode(node: node, position: .init(x: 70 + CGFloat(level) * 250, y: 80 + CGFloat(row) * 132)))
+        for (groupIndex, group) in groups.enumerated() {
+            let componentIDs = Set(group.map(\.id)); var componentIncoming = Dictionary(uniqueKeysWithValues: group.map { ($0.id, 0) })
+            for relation in relationships where componentIDs.contains(relation.from) && componentIDs.contains(relation.to) { componentIncoming[relation.to, default: 0] += 1 }
+            var queue = group.filter { componentIncoming[$0.id] == 0 }.sorted { $0.name < $1.name }, order: [DiagramNode] = []
+            while !queue.isEmpty { let node = queue.removeFirst(); order.append(node); for child in outgoing[node.id, default: []] where componentIDs.contains(child) { componentIncoming[child, default: 1] -= 1; if componentIncoming[child] == 0, let next = byID[child] { queue.append(next); queue.sort { $0.name < $1.name } } } }
+            order += group.filter { candidate in !order.contains(where: { $0.id == candidate.id }) }.sorted { $0.name < $1.name }
+            for (column, node) in order.enumerated() {
+                positioned.append(ExtractNode(node: node, position: .init(x: 70 + CGFloat(column) * 220, y: 80 + CGFloat(groupIndex) * 180)))
             }
         }
         // Kosaraju's algorithm identifies strongly connected components. A
