@@ -101,7 +101,7 @@ struct ExtractSheet: View {
     private var layout: ExtractLayout { ExtractLayout(title: store.title, nodes: store.nodes, relationships: store.relationships) }
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack { VStack(alignment: .leading, spacing: 3) { Text("Extracted diagram").font(.title2.weight(.bold)); Text("A clean relationship-first view, independent of canvas placement.").foregroundStyle(.secondary) }; Spacer(); Button("Done") { dismiss() } }
+            HStack { VStack(alignment: .leading, spacing: 3) { Text("System Design Overview").font(.title2.weight(.bold)); Text("A clean relationship-first view, independent of canvas placement.").foregroundStyle(.secondary) }; Spacer(); Button("Done") { dismiss() } }
             ScrollView([.horizontal, .vertical]) { ExtractPreview(layout: layout).frame(width: layout.size.width, height: layout.size.height).padding(20) }.background(.quaternary, in: RoundedRectangle(cornerRadius: 10))
             HStack { Picker("Format", selection: $format) { ForEach(ExtractFormat.allCases) { Text($0.rawValue).tag($0) } }.pickerStyle(.segmented).frame(width: 280); Spacer(); Button { save() } label: { Label("Export \(format.rawValue)", systemImage: "square.and.arrow.down") }.buttonStyle(.borderedProminent) }
         }.padding(24).frame(width: 900, height: 660)
