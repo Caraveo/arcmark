@@ -15,15 +15,23 @@ struct ExtractLoop: Identifiable {
     let id = UUID()
 }
 
-private func extractRoute(from source: ExtractNode, to target: ExtractNode) -> (start: CGPoint, end: CGPoint, control1: CGPoint, control2: CGPoint, label: CGPoint) {
+private func extractRoute(from source: ExtractNode, to target: ExtractNode) -> [CGPoint] {
     if target.position.y > source.position.y {
         let start = CGPoint(x: source.position.x + 90, y: source.position.y + 70)
         let end = CGPoint(x: target.position.x + 90, y: target.position.y)
-        return (start, end, CGPoint(x: start.x, y: start.y + 46), CGPoint(x: end.x, y: end.y - 46), CGPoint(x: (start.x + end.x) / 2, y: (start.y + end.y) / 2))
+        let laneY = (start.y + end.y) / 2
+        return [start, CGPoint(x: start.x, y: laneY), CGPoint(x: end.x, y: laneY), end]
     }
-    let start = CGPoint(x: source.position.x + 180, y: source.position.y + 35)
-    let end = CGPoint(x: target.position.x, y: target.position.y + 35)
-    return (start, end, CGPoint(x: start.x + 48, y: start.y), CGPoint(x: end.x - 48, y: end.y), CGPoint(x: (start.x + end.x) / 2, y: (start.y + end.y) / 2))
+    if target.position.y < source.position.y {
+        let start = CGPoint(x: source.position.x + 90, y: source.position.y)
+        let end = CGPoint(x: target.position.x + 90, y: target.position.y + 70)
+        let laneY = (start.y + end.y) / 2
+        return [start, CGPoint(x: start.x, y: laneY), CGPoint(x: end.x, y: laneY), end]
+    }
+    if target.position.x >= source.position.x {
+        return [CGPoint(x: source.position.x + 180, y: source.position.y + 35), CGPoint(x: target.position.x, y: target.position.y + 35)]
+    }
+    return [CGPoint(x: source.position.x, y: source.position.y + 35), CGPoint(x: target.position.x + 180, y: target.position.y + 35)]
 }
 
 struct ExtractLayout {
@@ -163,7 +171,8 @@ struct ExtractLayout {
             guard !loops.contains(where: { $0.hiddenRelationID == relation.id }) else { return nil }
             guard let source = lookup[relation.from], let target = lookup[relation.to] else { return nil }
             let route = extractRoute(from: source, to: target)
-            return "<path class=\"edge\" marker-end=\"url(#arrow)\" d=\"M\(route.start.x) \(route.start.y) C\(route.control1.x) \(route.control1.y), \(route.control2.x) \(route.control2.y), \(route.end.x) \(route.end.y)\"/>"
+            let commands = route.enumerated().map { $0.offset == 0 ? "M\($0.element.x) \($0.element.y)" : "L\($0.element.x) \($0.element.y)" }.joined(separator: " ")
+            return "<path class=\"edge\" marker-end=\"url(#arrow)\" d=\"\(commands)\"/>"
         }.joined()
         let loopAreas = loops.map { "<rect class=\"loop\" x=\"\($0.frame.minX)\" y=\"\($0.frame.minY)\" width=\"\($0.frame.width)\" height=\"\($0.frame.height)\" rx=\"12\"/>" }.joined()
         let cards = nodes.map { node in "<rect class=\"node\" x=\"\(node.position.x)\" y=\"\(node.position.y)\" width=\"180\" height=\"70\" rx=\"3\"/><text class=\"name\" x=\"\(node.position.x + 90)\" y=\"\(node.position.y + 42)\">\(escape(node.node.name))</text>" }.joined()
@@ -190,8 +199,8 @@ final class ExtractRenderView: NSView {
         for relation in layout.relationships {
             guard !layout.loops.contains(where: { $0.hiddenRelationID == relation.id }) else { continue }
             guard let source = lookup[relation.from], let target = lookup[relation.to] else { continue }
-            let route = extractRoute(from: source, to: target), start = route.start, end = route.end
-            let path = NSBezierPath(); path.move(to: start); path.curve(to: end, controlPoint1: route.control1, controlPoint2: route.control2); NSColor.slate.setStroke(); path.lineWidth = 2; path.stroke()
+            let route = extractRoute(from: source, to: target), start = route[route.count - 2], end = route.last!
+            let path = NSBezierPath(); path.move(to: route[0]); for point in route.dropFirst() { path.line(to: point) }; NSColor.slate.setStroke(); path.lineWidth = 2; path.stroke()
             let angle = atan2(end.y - start.y, end.x - start.x), arrow = NSBezierPath(); arrow.move(to: end); arrow.line(to: .init(x: end.x - 10 * cos(angle - .pi / 6), y: end.y - 10 * sin(angle - .pi / 6))); arrow.line(to: .init(x: end.x - 10 * cos(angle + .pi / 6), y: end.y - 10 * sin(angle + .pi / 6))); arrow.close(); NSColor.slate.setFill(); arrow.fill()
         }
         for item in layout.nodes {
@@ -232,7 +241,7 @@ private struct ExtractPreview: View {
         Canvas { context, _ in
             let lookup = Dictionary(uniqueKeysWithValues: layout.nodes.map { ($0.id, $0) })
             for loop in layout.loops { context.fill(Path(roundedRect: loop.frame, cornerRadius: 12), with: .color(.gray.opacity(0.10))); context.stroke(Path(roundedRect: loop.frame, cornerRadius: 12), with: .color(.gray.opacity(0.7)), style: .init(lineWidth: 1, dash: [6, 5])) }
-            for relation in layout.relationships { guard !layout.loops.contains(where: { $0.hiddenRelationID == relation.id }), let source = lookup[relation.from], let target = lookup[relation.to] else { continue }; let route = extractRoute(from: source, to: target), start = route.start, end = route.end; var path = Path(); path.move(to: start); path.addCurve(to: end, control1: route.control1, control2: route.control2); context.stroke(path, with: .color(.secondary), lineWidth: 2); let angle = atan2(end.y - route.control2.y, end.x - route.control2.x); var arrow = Path(); arrow.move(to: end); arrow.addLine(to: .init(x: end.x - 10 * cos(angle - .pi / 6), y: end.y - 10 * sin(angle - .pi / 6))); arrow.addLine(to: .init(x: end.x - 10 * cos(angle + .pi / 6), y: end.y - 10 * sin(angle + .pi / 6))); arrow.closeSubpath(); context.fill(arrow, with: .color(.secondary)) }
+            for relation in layout.relationships { guard !layout.loops.contains(where: { $0.hiddenRelationID == relation.id }), let source = lookup[relation.from], let target = lookup[relation.to] else { continue }; let route = extractRoute(from: source, to: target), start = route[route.count - 2], end = route.last!; var path = Path(); path.move(to: route[0]); for point in route.dropFirst() { path.addLine(to: point) }; context.stroke(path, with: .color(.secondary), lineWidth: 2); let angle = atan2(end.y - start.y, end.x - start.x); var arrow = Path(); arrow.move(to: end); arrow.addLine(to: .init(x: end.x - 10 * cos(angle - .pi / 6), y: end.y - 10 * sin(angle - .pi / 6))); arrow.addLine(to: .init(x: end.x - 10 * cos(angle + .pi / 6), y: end.y - 10 * sin(angle + .pi / 6))); arrow.closeSubpath(); context.fill(arrow, with: .color(.secondary)) }
             for item in layout.nodes { let rect = CGRect(x: item.position.x, y: item.position.y, width: 180, height: 70); context.fill(Path(roundedRect: rect, cornerRadius: 3), with: .color(.white)); context.stroke(Path(roundedRect: rect, cornerRadius: 3), with: .color(.gray.opacity(0.7)), lineWidth: 1); context.draw(Text(item.node.name).font(.headline.weight(.semibold)).foregroundColor(.primary), at: .init(x: rect.midX, y: rect.midY)) }
         }.background(.white)
     }
