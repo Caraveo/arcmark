@@ -107,7 +107,9 @@ struct ExtractLayout {
             }
             ordered += component.filter { !ordered.contains($0) }.sorted { $0.uuidString < $1.uuidString }
             let currentPositions = Dictionary(uniqueKeysWithValues: positioned.map { ($0.id, $0.position) })
-            let originX = ordered.compactMap { currentPositions[$0]?.x }.min() ?? 70
+            // A loop is its own horizontal group, so it always starts at the
+            // group's left edge rather than inheriting a stale depth offset.
+            let originX: CGFloat = 70
             let originY = ordered.compactMap { currentPositions[$0]?.y }.min() ?? 80
             for (index, id) in ordered.enumerated() {
                 guard let itemIndex = positioned.firstIndex(where: { $0.id == id }) else { continue }
