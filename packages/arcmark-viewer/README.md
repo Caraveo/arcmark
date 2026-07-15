@@ -1,13 +1,13 @@
-# @arcmark/viewer
+# @caraveo/arcmark-viewer
 
-`@arcmark/viewer` is the web delivery layer for Universal System Design: a dependency-free, read-only web component that turns an ArcMark `.arc` document into a useful diagram inside a Node.js web project.
+`@caraveo/arcmark-viewer` is the web delivery layer for Universal System Design: a dependency-free, read-only web component that turns an ArcMark `.arc` document into a useful diagram inside a Node.js web project.
 
 ArcMark Studio is where a team authors the system model; this component is how that same portable model can appear in product documentation, internal portals, developer tools, and customer-facing architecture pages. It accepts the ArcMark Standard v1.0.0 `.arc` format without needing a server-side renderer.
 
 ## Install
 
 ```bash
-npm install @arcmark/viewer
+npm install @caraveo/arcmark-viewer
 ```
 
 For local development, install it from this repository:
@@ -19,7 +19,7 @@ npm install /path/to/Universal\ Systems\ Design/packages/arcmark-viewer
 ## Use with a file URL
 
 ```js
-import "@arcmark/viewer";
+import "@caraveo/arcmark-viewer";
 ```
 
 ```html
@@ -29,7 +29,7 @@ import "@arcmark/viewer";
 ## Use with an XML string
 
 ```js
-import "@arcmark/viewer";
+import "@caraveo/arcmark-viewer";
 
 document.querySelector("arcmark-diagram").data = arcDocumentText;
 ```

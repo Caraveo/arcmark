@@ -6,4 +6,4 @@
 - The `XML` badge in `README.md` mirrors the XML declaration version used in ArcMark documents.
 - Every push or release increments the app and release version using the format `v0.X.0`, unless the user explicitly requests a different version. Update the README `Version` badge, `CFBundleShortVersionString`, release/tag name, and release artifact name together.
 - Keep the macOS, Swift, SwiftUI, Version, ArcMark Standard, XML, and Status badges at the top of `README.md`.
-- `@arcmark/viewer` is independently versioned for npm. An npm publish must update its `package.json` and `npm.md`, run `npm test` and `npm pack --dry-run`, and create a matching `arcmark-npm-vX.Y.Z` Git tag. An npm-only release does not change the Studio version.
+- `@caraveo/arcmark-viewer` is independently versioned for npm. An npm publish must update its `package.json` and `npm.md`, run `npm test` and `npm pack --dry-run`, and create a matching `arcmark-npm-vX.Y.Z` Git tag. An npm-only release does not change the Studio version.
