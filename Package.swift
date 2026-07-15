@@ -5,5 +5,8 @@ let package = Package(
     name: "ArcMarkStudio",
     platforms: [.macOS(.v14)],
     products: [.executable(name: "ArcMarkStudio", targets: ["ArcMarkStudio"])],
-    targets: [.executableTarget(name: "ArcMarkStudio", resources: [.process("Resources")])]
+    targets: [
+        .executableTarget(name: "ArcMarkStudio", resources: [.process("Resources")]),
+        .testTarget(name: "ArcMarkStudioTests", dependencies: ["ArcMarkStudio"])
+    ]
 )

@@ -31,4 +31,22 @@ final class ArcMarkApplicationDelegate: NSObject, NSApplicationDelegate {
         NSApp.activate(ignoringOtherApps: true)
         NSApp.windows.first(where: { $0.canBecomeKey })?.makeKeyAndOrderFront(nil)
     }
+
+    func application(_ application: NSApplication, open urls: [URL]) {
+        ArcMarkDocumentOpenCoordinator.shared.open(urls)
+    }
+}
+
+/// Bridges Finder and Launch Services open-file events into SwiftUI. The
+/// coordinator retains the last requested URL so a document opened while the
+/// app is launching is delivered after the editor view has appeared.
+final class ArcMarkDocumentOpenCoordinator: ObservableObject {
+    static let shared = ArcMarkDocumentOpenCoordinator()
+    @Published private(set) var requestedURL: URL?
+
+    func open(_ urls: [URL]) {
+        DispatchQueue.main.async {
+            self.requestedURL = urls.last
+        }
+    }
 }

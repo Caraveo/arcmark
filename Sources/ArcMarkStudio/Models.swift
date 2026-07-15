@@ -25,6 +25,7 @@ final class DiagramStore: ObservableObject {
     @Published var selectedRelation: UUID? = nil
     @Published var connectionSourceID: UUID? = nil
     @Published var zoom: CGFloat = 1
+    @Published var importError: String? = nil
     var selectedNode: DiagramNode? { nodes.first { $0.id == selectedID } }
 
     init() { relationships = [.init(from: nodes[0].id, to: nodes[1].id, type: "places"), .init(from: nodes[1].id, to: nodes[2].id, type: "charges")] }
@@ -42,6 +43,20 @@ final class DiagramStore: ObservableObject {
         selectedID = id
     }
     func extractLayout() -> ExtractLayout { ExtractLayout(title: title, nodes: nodes, relationships: relationships) }
+    func openArc(at url: URL) {
+        do {
+            let imported = try ArcMarkDocumentReader.read(from: url)
+            title = imported.title
+            nodes = imported.nodes
+            relationships = imported.relationships
+            selectedID = nil
+            selectedRelation = nil
+            connectionSourceID = nil
+            importError = nil
+        } catch {
+            importError = error.localizedDescription
+        }
+    }
     func saveArc() {
         let panel = NSSavePanel()
         panel.nameFieldStringValue = "\(title).arc"

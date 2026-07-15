@@ -3,6 +3,7 @@ import AppKit
 
 struct ContentView: View {
     @StateObject private var store = DiagramStore()
+    @ObservedObject private var documentOpener = ArcMarkDocumentOpenCoordinator.shared
     @State private var showExport = false
     @State private var showExtract = false
     var body: some View {
@@ -17,6 +18,13 @@ struct ContentView: View {
         .sheet(isPresented: $showExport) { ExportSheet(store: store) }
         .sheet(isPresented: $showExtract) { ExtractSheet(store: store) }
         .onDeleteCommand { store.deleteSelected() }
+        .onOpenURL { store.openArc(at: $0) }
+        .onReceive(documentOpener.$requestedURL.compactMap { $0 }) { url in store.openArc(at: url) }
+        .alert("Unable to Open ArcMark Document", isPresented: Binding(get: { store.importError != nil }, set: { if !$0 { store.importError = nil } })) {
+            Button("OK", role: .cancel) { store.importError = nil }
+        } message: {
+            Text(store.importError ?? "")
+        }
         .background(Color(nsColor: .windowBackgroundColor))
     }
 }
