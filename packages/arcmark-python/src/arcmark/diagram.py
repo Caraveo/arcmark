@@ -42,7 +42,7 @@ class ArcMarkDiagram:
     title: str
     nodes: tuple[ArcMarkNode, ...]
     relationships: tuple[ArcMarkRelationship, ...]
-    version: str = "1.0"
+    version: str = "1.0.0"
 
     @classmethod
     def from_file(cls, path: str | Path) -> "ArcMarkDiagram":

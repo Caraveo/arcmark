@@ -64,6 +64,6 @@ final class DiagramStore: ObservableObject {
             guard let a = nodes.first(where: { $0.id == r.from }), let b = nodes.first(where: { $0.id == r.to }) else { return nil }
             return "    <relationship from=\"\(xmlID(a.id))\" to=\"\(xmlID(b.id))\" type=\"\(escape(r.type))\"/>"
         }.joined(separator: "\n")
-        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<arcmark version=\"1.0\">\n  <diagram title=\"\(escape(title))\">\n  <nodes>\n\(ns)\n  </nodes>\n  <relationships>\n\(rs)\n  </relationships>\n  </diagram>\n</arcmark>"
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<arcmark version=\"1.0.0\">\n  <diagram title=\"\(escape(title))\">\n  <nodes>\n\(ns)\n  </nodes>\n  <relationships>\n\(rs)\n  </relationships>\n  </diagram>\n</arcmark>"
     }
 }

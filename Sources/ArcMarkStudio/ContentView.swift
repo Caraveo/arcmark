@@ -41,7 +41,7 @@ private struct Sidebar: View {
             }.listStyle(.sidebar)
             Spacer()
             VStack(alignment: .leading, spacing: 7) {
-                Label("ArcMark v1.0", systemImage: "checkmark.seal.fill").font(.caption).foregroundStyle(.green)
+                Label("ArcMark Standard v1.0.0", systemImage: "checkmark.seal.fill").font(.caption).foregroundStyle(.green)
                 Text(".arc document format").font(.caption2).foregroundStyle(.secondary)
             }.padding(16).frame(maxWidth: .infinity, alignment: .leading).background(.quaternary)
         }

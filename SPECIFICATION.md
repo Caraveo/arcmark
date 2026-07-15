@@ -1,8 +1,8 @@
-# ArcMark Diagram Format 1.0
+# ArcMark Standard v1.0.0
 
 ## Status
 
-This document defines ArcMark 1.0, an XML-based interchange format for UML-inspired system diagrams. An ArcMark document MUST use the `.arc` filename extension and SHOULD use UTF-8 encoding. It is validated by `arcmark.xsd`.
+This document defines ArcMark Standard v1.0.0, an XML-based interchange format for UML-inspired system diagrams. An ArcMark document MUST use the `.arc` filename extension and SHOULD use UTF-8 encoding. It is validated by `arcmark.xsd`.
 
 ## Identifier and file association
 
@@ -12,7 +12,7 @@ This document defines ArcMark 1.0, an XML-based interchange format for UML-inspi
 | Uniform Type Identifier | `com.arcmark.diagram` |
 | Conforms to | `public.xml` |
 | Root element | `arcmark` |
-| Current version | `1.0` |
+| Current version | `1.0.0` |
 
 The `.arc` suffix identifies an ArcMark diagram, not a generic XML file. The underlying syntax is XML for compatibility with standard validators and tooling.
 
@@ -20,7 +20,7 @@ The `.arc` suffix identifies an ArcMark diagram, not a generic XML file. The und
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<arcmark version="1.0">
+<arcmark version="1.0.0">
   <diagram title="Commerce Domain">
     <nodes>
       <node id="n_customer" name="Customer" kind="entity" x="180" y="220">
