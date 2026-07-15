@@ -1,6 +1,8 @@
 # @arcmark/viewer
 
-A dependency-free, read-only web component for displaying ArcMark `.arc` diagrams in a Node.js web project.
+`@arcmark/viewer` is the web delivery layer for Universal System Design: a dependency-free, read-only web component that turns an ArcMark `.arc` document into a useful diagram inside a Node.js web project.
+
+ArcMark Studio is where a team authors the system model; this component is how that same portable model can appear in product documentation, internal portals, developer tools, and customer-facing architecture pages. It accepts the ArcMark Standard v1.0.0 `.arc` format without needing a server-side renderer.
 
 ## Install
 
@@ -32,6 +34,6 @@ import "@arcmark/viewer";
 document.querySelector("arcmark-diagram").data = arcDocumentText;
 ```
 
-The component emits `arcmark-load` with the parsed diagram model and `arcmark-error` when fetching or parsing fails.
+The component emits `arcmark-load` with the parsed diagram model and `arcmark-error` when fetching or parsing fails. This makes it easy to connect a diagram to surrounding application UI, analytics, or documentation metadata.
 
-It is a browser component, so use it in client-side code in Next.js, Vite, Express-rendered pages, Electron, and similar Node.js projects. For server-side rendering, load it only after the page reaches the browser.
+It is a browser component, so use it in client-side code in Next.js, Vite, Express-rendered pages, Electron, and similar Node.js projects. For server-side rendering, load it only after the page reaches the browser. For a clean relationship-first export, create a **System Design Overview** from ArcMark Studio and export SVG, PNG, JPEG, or PDF.

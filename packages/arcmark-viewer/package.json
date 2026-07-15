@@ -1,7 +1,7 @@
 {
   "name": "@arcmark/viewer",
   "version": "1.0.0",
-  "description": "A dependency-free web component for displaying ArcMark .arc diagrams.",
+  "description": "A dependency-free web component for displaying ArcMark Standard .arc system diagrams.",
   "type": "module",
   "main": "./src/arcmark-viewer.js",
   "exports": "./src/arcmark-viewer.js",
