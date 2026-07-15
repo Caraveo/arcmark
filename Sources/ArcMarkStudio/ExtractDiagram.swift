@@ -44,15 +44,32 @@ struct ExtractLayout {
             groups.append(component)
         }
         var positioned: [ExtractNode] = []
-        for (groupIndex, group) in groups.enumerated() {
+        var groupTop: CGFloat = 80
+        for group in groups {
             let componentIDs = Set(group.map(\.id)); var componentIncoming = Dictionary(uniqueKeysWithValues: group.map { ($0.id, 0) })
             for relation in relationships where componentIDs.contains(relation.from) && componentIDs.contains(relation.to) { componentIncoming[relation.to, default: 0] += 1 }
+            let initialIncoming = componentIncoming
             var queue = group.filter { componentIncoming[$0.id] == 0 }.sorted { $0.name < $1.name }, order: [DiagramNode] = []
             while !queue.isEmpty { let node = queue.removeFirst(); order.append(node); for child in outgoing[node.id, default: []] where componentIDs.contains(child) { componentIncoming[child, default: 1] -= 1; if componentIncoming[child] == 0, let next = byID[child] { queue.append(next); queue.sort { $0.name < $1.name } } } }
             order += group.filter { candidate in !order.contains(where: { $0.id == candidate.id }) }.sorted { $0.name < $1.name }
-            for (column, node) in order.enumerated() {
-                positioned.append(ExtractNode(node: node, position: .init(x: 70 + CGFloat(column) * 220, y: 80 + CGFloat(groupIndex) * 180)))
+            var depth = Dictionary(uniqueKeysWithValues: order.map { ($0.id, 0) })
+            var row: [UUID: Int] = [:], nextRow = 0
+            for root in order where initialIncoming[root.id] == 0 { row[root.id] = nextRow; nextRow += 1 }
+            for node in order {
+                if row[node.id] == nil { row[node.id] = nextRow; nextRow += 1 }
+                let children = outgoing[node.id, default: []].filter { componentIDs.contains($0) }
+                for (childIndex, child) in children.enumerated() {
+                    depth[child] = max(depth[child, default: 0], depth[node.id, default: 0] + 1)
+                    guard row[child] == nil else { continue }
+                    if childIndex == 0 { row[child] = row[node.id] } else { row[child] = nextRow; nextRow += 1 }
+                }
             }
+            for node in order {
+                let column = depth[node.id, default: 0], lane = row[node.id, default: 0]
+                positioned.append(ExtractNode(node: node, position: .init(x: 70 + CGFloat(column) * 220, y: groupTop + CGFloat(lane) * 132)))
+            }
+            let groupRows = max(1, nextRow)
+            groupTop += CGFloat(groupRows) * 132 + 70
         }
         // Kosaraju's algorithm identifies strongly connected components. A
         // component with multiple nodes (or a self relation) is a visual loop.
