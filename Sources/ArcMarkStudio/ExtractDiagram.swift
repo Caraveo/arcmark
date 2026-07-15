@@ -101,6 +101,27 @@ struct ExtractLayout {
                 positioned[itemIndex] = ExtractNode(node: positioned[itemIndex].node, position: .init(x: originX + CGFloat(index) * 210, y: originY))
             }
         }
+        // Loop areas reserve real space. Pack every non-loop node into the next
+        // available row rather than allowing it to sit on top of a loop member.
+        let loopMembers = Set(components.flatMap { $0 })
+        let loopFrames = components.compactMap { component -> CGRect? in
+            let rects = component.compactMap { id -> CGRect? in
+                positioned.first(where: { $0.id == id }).map { CGRect(x: $0.position.x, y: $0.position.y, width: 180, height: 70) }
+            }
+            guard var frame = rects.first else { return nil }; for rect in rects.dropFirst() { frame = frame.union(rect) }
+            return frame.insetBy(dx: -26, dy: -30)
+        }
+        var occupied = loopFrames
+        for index in positioned.indices where !loopMembers.contains(positioned[index].id) {
+            var point = positioned[index].position
+            var rect = CGRect(x: point.x, y: point.y, width: 180, height: 70)
+            while occupied.contains(where: { $0.insetBy(dx: -18, dy: -22).intersects(rect) }) {
+                point.y += 132
+                rect.origin = point
+            }
+            positioned[index] = ExtractNode(node: positioned[index].node, position: point)
+            occupied.append(rect)
+        }
         self.nodes = positioned
         let positions = Dictionary(uniqueKeysWithValues: positioned.map { ($0.id, $0.position) })
         self.loops = components.compactMap { component in
