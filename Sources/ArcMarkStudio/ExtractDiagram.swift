@@ -69,7 +69,6 @@ struct ExtractLayout {
                 positioned.append(ExtractNode(node: node, position: .init(x: 70 + CGFloat(level) * 250, y: 80 + CGFloat(row) * 132)))
             }
         }
-        self.nodes = positioned
         // Kosaraju's algorithm identifies strongly connected components. A
         // component with multiple nodes (or a self relation) is a visual loop.
         var forward = Dictionary(uniqueKeysWithValues: source.map { ($0.id, [UUID]()) })
@@ -81,6 +80,28 @@ struct ExtractLayout {
         visited.removeAll(); var components: [Set<UUID>] = []
         func collect(_ id: UUID, _ component: inout Set<UUID>) { guard visited.insert(id).inserted else { return }; component.insert(id); for next in backward[id, default: []] { collect(next, &component) } }
         for id in finish.reversed() { var component = Set<UUID>(); collect(id, &component); if component.count > 1 || forward[id, default: []].contains(id) { components.append(component) } }
+        // Render cyclic components as a left-to-right sequence within their own
+        // enclosure. It makes the omitted final return edge visually obvious.
+        for component in components {
+            let internalRelations = relationships.filter { component.contains($0.from) && component.contains($0.to) }
+            let externalEntrances = component.filter { id in relationships.contains { $0.to == id && !component.contains($0.from) } }
+            var ordered = externalEntrances.sorted { $0.uuidString < $1.uuidString }
+            if ordered.isEmpty, let first = component.sorted(by: { $0.uuidString < $1.uuidString }).first { ordered = [first] }
+            var cursor = 0
+            while cursor < ordered.count {
+                let current = ordered[cursor]; cursor += 1
+                if let next = internalRelations.first(where: { $0.from == current && !ordered.contains($0.to) })?.to { ordered.append(next) }
+            }
+            ordered += component.filter { !ordered.contains($0) }.sorted { $0.uuidString < $1.uuidString }
+            let currentPositions = Dictionary(uniqueKeysWithValues: positioned.map { ($0.id, $0.position) })
+            let originX = ordered.compactMap { currentPositions[$0]?.x }.min() ?? 70
+            let originY = ordered.compactMap { currentPositions[$0]?.y }.min() ?? 80
+            for (index, id) in ordered.enumerated() {
+                guard let itemIndex = positioned.firstIndex(where: { $0.id == id }) else { continue }
+                positioned[itemIndex] = ExtractNode(node: positioned[itemIndex].node, position: .init(x: originX + CGFloat(index) * 210, y: originY))
+            }
+        }
+        self.nodes = positioned
         let positions = Dictionary(uniqueKeysWithValues: positioned.map { ($0.id, $0.position) })
         self.loops = components.compactMap { component in
             let rects = component.compactMap { positions[$0].map { CGRect(x: $0.x, y: $0.y, width: 180, height: 70) } }
