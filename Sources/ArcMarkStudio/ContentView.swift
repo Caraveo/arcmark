@@ -39,7 +39,7 @@ private struct Sidebar: View {
             Spacer()
             VStack(alignment: .leading, spacing: 7) {
                 Label("ArcMark v1.0", systemImage: "checkmark.seal.fill").font(.caption).foregroundStyle(.green)
-                Text("XML schema ready").font(.caption2).foregroundStyle(.secondary)
+                Text(".arc document format").font(.caption2).foregroundStyle(.secondary)
             }.padding(16).frame(maxWidth: .infinity, alignment: .leading).background(.quaternary)
         }
     }
@@ -58,7 +58,7 @@ private struct Toolbar: View {
             Button { store.zoom = max(0.5, store.zoom - 0.1) } label: { Image(systemName: "minus.magnifyingglass") }.buttonStyle(.plain)
             Text("\(Int(store.zoom * 100))%").font(.caption.monospacedDigit()).foregroundStyle(.secondary).frame(width: 34)
             Button { store.zoom = min(1.6, store.zoom + 0.1) } label: { Image(systemName: "plus.magnifyingglass") }.buttonStyle(.plain)
-            Button { showExport = true } label: { Label("Export XML", systemImage: "square.and.arrow.up") }.buttonStyle(.borderedProminent).tint(.indigo)
+            Button { showExport = true } label: { Label("Export .arc", systemImage: "square.and.arrow.up") }.buttonStyle(.borderedProminent).tint(.indigo)
         }.padding(.horizontal, 22).frame(height: 58).background(.bar).overlay(alignment: .bottom) { Divider() }
     }
 }
@@ -122,8 +122,8 @@ private struct NodeInspector: View {
 
 private struct ExportSheet: View {
     @ObservedObject var store: DiagramStore; @Environment(\.dismiss) private var dismiss
-    var body: some View { VStack(alignment: .leading, spacing: 16) { HStack { VStack(alignment: .leading) { Text("Export ArcMark XML").font(.title2.weight(.bold)); Text("Compatible with the bundled arcmark.xsd schema.").foregroundStyle(.secondary) }; Spacer(); Button("Done") { dismiss() } }
+    var body: some View { VStack(alignment: .leading, spacing: 16) { HStack { VStack(alignment: .leading) { Text("Export ArcMark .arc").font(.title2.weight(.bold)); Text("An XML-based ArcMark document, validated by the bundled XSD.").foregroundStyle(.secondary) }; Spacer(); Button("Done") { dismiss() } }
         TextEditor(text: .constant(store.xml())).font(.system(.caption, design: .monospaced)).padding(8).background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
-        HStack { Button { NSPasteboard.general.clearContents(); NSPasteboard.general.setString(store.xml(), forType: .string) } label: { Label("Copy XML", systemImage: "doc.on.doc") }; Spacer(); Button { let panel = NSSavePanel(); panel.nameFieldStringValue = "\(store.title).arc.xml"; panel.begin { if $0 == .OK, let url = panel.url { try? store.xml().write(to: url, atomically: true, encoding: .utf8) } } } label: { Label("Save .arc.xml", systemImage: "square.and.arrow.down") }.buttonStyle(.borderedProminent) }
+        HStack { Button { NSPasteboard.general.clearContents(); NSPasteboard.general.setString(store.xml(), forType: .string) } label: { Label("Copy document", systemImage: "doc.on.doc") }; Spacer(); Button { let panel = NSSavePanel(); panel.nameFieldStringValue = "\(store.title).arc"; panel.allowedContentTypes = [.arcMark]; panel.begin { if $0 == .OK, let url = panel.url { try? store.xml().write(to: url, atomically: true, encoding: .utf8) } } } label: { Label("Save .arc", systemImage: "square.and.arrow.down") }.buttonStyle(.borderedProminent) }
     }.padding(24).frame(width: 700, height: 560) }
 }
