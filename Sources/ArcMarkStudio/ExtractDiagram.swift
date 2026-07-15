@@ -62,8 +62,8 @@ struct ExtractLayout {
         <?xml version="1.0" encoding="UTF-8"?>
         <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"\(Int(size.width))\" height=\"\(Int(size.height))\" viewBox=\"0 0 \(Int(size.width)) \(Int(size.height))\">
           <defs><marker id=\"arrow\" viewBox=\"0 0 10 10\" refX=\"8\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto\"><path d=\"M 0 0 L 10 5 L 0 10 z\" fill=\"#64748b\"/></marker></defs>
-          <style>.bg{fill:#ffffff}.edge{fill:none;stroke:#64748b;stroke-width:2}.node{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5}.name{font:600 15px -apple-system,BlinkMacSystemFont,sans-serif;fill:#0f172a;text-anchor:middle}.label{font:12px -apple-system,BlinkMacSystemFont,sans-serif;fill:#475569;text-anchor:middle}</style>
-          <rect class=\"bg\" width=\"100%\" height=\"100%\"/>\(edges)\(cards)
+          <style>.edge{fill:none;stroke:#64748b;stroke-width:2}.node{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5}.name{font:600 15px -apple-system,BlinkMacSystemFont,sans-serif;fill:#0f172a;text-anchor:middle}.label{font:12px -apple-system,BlinkMacSystemFont,sans-serif;fill:#475569;text-anchor:middle}</style>
+          \(edges)\(cards)
         </svg>
         """
     }
@@ -71,10 +71,11 @@ struct ExtractLayout {
 
 final class ExtractRenderView: NSView {
     let layout: ExtractLayout
-    init(layout: ExtractLayout) { self.layout = layout; super.init(frame: CGRect(origin: .zero, size: layout.size)); wantsLayer = true }
+    let transparentBackground: Bool
+    init(layout: ExtractLayout, transparentBackground: Bool = false) { self.layout = layout; self.transparentBackground = transparentBackground; super.init(frame: CGRect(origin: .zero, size: layout.size)); wantsLayer = true }
     required init?(coder: NSCoder) { nil }
     override func draw(_ dirtyRect: NSRect) {
-        NSColor.white.setFill(); bounds.fill()
+        if transparentBackground { NSGraphicsContext.current?.cgContext.clear(bounds) } else { NSColor.white.setFill(); bounds.fill() }
         let lookup = Dictionary(uniqueKeysWithValues: layout.nodes.map { ($0.id, $0) })
         for relation in layout.relationships {
             guard let source = lookup[relation.from], let target = lookup[relation.to] else { continue }
@@ -108,7 +109,7 @@ struct ExtractSheet: View {
     }
     private func save() {
         let panel = NSSavePanel(); panel.nameFieldStringValue = "\(store.title).\(format.extensionName)"; panel.allowedContentTypes = [format.type]
-        panel.begin { response in guard response == .OK, let url = panel.url else { return }; let view = ExtractRenderView(layout: layout); let data: Data?
+        panel.begin { response in guard response == .OK, let url = panel.url else { return }; let view = ExtractRenderView(layout: layout, transparentBackground: format == .png); let data: Data?
             switch format { case .svg: data = layout.svg().data(using: .utf8); case .pdf: data = view.dataWithPDF(inside: view.bounds); case .png, .jpeg: let image = NSImage(size: layout.size); image.lockFocus(); view.draw(view.bounds); image.unlockFocus(); guard let tiff = image.tiffRepresentation, let bitmap = NSBitmapImageRep(data: tiff) else { return }; data = bitmap.representation(using: format == .png ? .png : .jpeg, properties: format == .jpeg ? [.compressionFactor: 0.92] : [:]) }
             try? data?.write(to: url)
         }
