@@ -74,22 +74,44 @@ private struct Toolbar: View {
 
 private struct DiagramCanvas: View {
     @ObservedObject var store: DiagramStore
+    @State private var canvasOffset: CGSize = .zero
+    @GestureState private var canvasDrag: CGSize = .zero
+
+    private var displayedCanvasOffset: CGSize {
+        CGSize(
+            width: canvasOffset.width + canvasDrag.width,
+            height: canvasOffset.height + canvasDrag.height
+        )
+    }
+
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .topLeading) {
                 Canvas { context, size in
                     let step: CGFloat = 24
-                    for x in stride(from: 0, through: size.width, by: step) { context.stroke(Path(CGRect(x: x, y: 0, width: 0.5, height: size.height)), with: .color(.gray.opacity(0.12))) }
-                    for y in stride(from: 0, through: size.height, by: step) { context.stroke(Path(CGRect(x: 0, y: y, width: size.width, height: 0.5)), with: .color(.gray.opacity(0.12))) }
+                    let gridX = displayedCanvasOffset.width.truncatingRemainder(dividingBy: step)
+                    let gridY = displayedCanvasOffset.height.truncatingRemainder(dividingBy: step)
+                    for x in stride(from: gridX - step, through: size.width, by: step) { context.stroke(Path(CGRect(x: x, y: 0, width: 0.5, height: size.height)), with: .color(.gray.opacity(0.12))) }
+                    for y in stride(from: gridY - step, through: size.height, by: step) { context.stroke(Path(CGRect(x: 0, y: y, width: size.width, height: 0.5)), with: .color(.gray.opacity(0.12))) }
+                    context.translateBy(x: displayedCanvasOffset.width, y: displayedCanvasOffset.height)
                     for r in store.relationships { guard let a = store.nodes.first(where: {$0.id == r.from}), let b = store.nodes.first(where: {$0.id == r.to}) else { continue }; let route = canvasRoute(from: a, to: b, all: store.nodes); context.stroke(route.path, with: .color(.indigo.opacity(0.72)), style: .init(lineWidth: 2.25, dash: [6, 5])); let angle = atan2(route.arrowTo.y - route.arrowFrom.y, route.arrowTo.x - route.arrowFrom.x); let arrow: CGFloat = 10; var head = Path(); head.move(to: route.arrowTo); head.addLine(to: CGPoint(x: route.arrowTo.x - arrow * cos(angle - .pi / 6), y: route.arrowTo.y - arrow * sin(angle - .pi / 6))); head.addLine(to: CGPoint(x: route.arrowTo.x - arrow * cos(angle + .pi / 6), y: route.arrowTo.y - arrow * sin(angle + .pi / 6))); head.closeSubpath(); context.fill(head, with: .color(.indigo)); context.draw(Text(r.type).font(.caption.weight(.medium)).foregroundColor(.indigo), at: route.labelPoint) }
                 }
-                .contentShape(Rectangle()).onTapGesture { store.selectedID = nil; store.connectionSourceID = nil }
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture(minimumDistance: 2)
+                        .updating($canvasDrag) { value, state, _ in state = value.translation }
+                        .onEnded { value in
+                            canvasOffset.width += value.translation.width
+                            canvasOffset.height += value.translation.height
+                        }
+                )
+                .onTapGesture { store.selectedID = nil; store.connectionSourceID = nil }
                 ForEach(store.nodes) { node in NodeCard(node: node, isSelected: store.selectedID == node.id)
-                    .position(x: node.position.x + 74, y: node.position.y + 52)
+                    .position(x: node.position.x + 74 + displayedCanvasOffset.width, y: node.position.y + 52 + displayedCanvasOffset.height)
                     .gesture(DragGesture().onChanged { value in var changed = node; changed.position = CGPoint(x: value.location.x - 74, y: value.location.y - 52); store.update(changed) })
                     .onTapGesture { store.handleNodeTap(node.id) }
                 }
-                VStack { Spacer(); HStack { Text(store.connectionSourceID == nil ? "Select a node, then Connect to link it" : "Now select the destination node").font(.caption.weight(store.connectionSourceID == nil ? .regular : .semibold)).foregroundStyle(store.connectionSourceID == nil ? Color.secondary : Color.orange).padding(10).background(.regularMaterial, in: Capsule()); Spacer() } }.padding(18)
+                VStack { Spacer(); HStack { Text(store.connectionSourceID == nil ? "Drag empty space to pan · Select a node, then Connect to link it" : "Now select the destination node").font(.caption.weight(store.connectionSourceID == nil ? .regular : .semibold)).foregroundStyle(store.connectionSourceID == nil ? Color.secondary : Color.orange).padding(10).background(.regularMaterial, in: Capsule()); Spacer() } }.padding(18)
             }.scaleEffect(store.zoom, anchor: .topLeading)
         }.background(Color(nsColor: .controlBackgroundColor))
     }
