@@ -36,11 +36,44 @@ struct ExtractLayout {
         }
         // Cycles and disconnected diagrams remain deterministic in the first column.
         let sorted = source.sorted { (depth[$0.id] ?? 0, $0.name) < (depth[$1.id] ?? 0, $1.name) }
-        let groups = Dictionary(grouping: sorted, by: { depth[$0.id] ?? 0 })
+        var groups = Dictionary(grouping: sorted, by: { depth[$0.id] ?? 0 })
+        let levels = groups.keys.sorted()
+        let incomingSources = Dictionary(grouping: relationships, by: \.to)
+        let outgoingTargets = Dictionary(grouping: relationships, by: \.from)
+
+        // A small Sugiyama-style barycentric pass: order each layer by the rows of
+        // its neighbors. This preserves flows such as Customer → Order above
+        // New Service → New Entity instead of alphabetically crossing them.
+        for _ in 0..<4 {
+            for level in levels.dropFirst() {
+                guard let current = groups[level] else { continue }
+                let previousRows = Dictionary(uniqueKeysWithValues: levels.filter { $0 < level }.flatMap { groups[$0] ?? [] }.enumerated().map { ($0.element.id, Double($0.offset)) })
+                groups[level] = current.enumerated().sorted { left, right in
+                    func score(_ node: DiagramNode, fallback: Int) -> Double {
+                        let rows = (incomingSources[node.id] ?? []).compactMap { previousRows[$0.from] }
+                        return rows.isEmpty ? Double(fallback) : rows.reduce(0, +) / Double(rows.count)
+                    }
+                    let a = score(left.element, fallback: left.offset), b = score(right.element, fallback: right.offset)
+                    return a == b ? left.element.name < right.element.name : a < b
+                }.map(\.element)
+            }
+            for level in levels.dropLast().reversed() {
+                guard let current = groups[level] else { continue }
+                let nextRows = Dictionary(uniqueKeysWithValues: levels.filter { $0 > level }.flatMap { groups[$0] ?? [] }.enumerated().map { ($0.element.id, Double($0.offset)) })
+                groups[level] = current.enumerated().sorted { left, right in
+                    func score(_ node: DiagramNode, fallback: Int) -> Double {
+                        let rows = (outgoingTargets[node.id] ?? []).compactMap { nextRows[$0.to] }
+                        return rows.isEmpty ? Double(fallback) : rows.reduce(0, +) / Double(rows.count)
+                    }
+                    let a = score(left.element, fallback: left.offset), b = score(right.element, fallback: right.offset)
+                    return a == b ? left.element.name < right.element.name : a < b
+                }.map(\.element)
+            }
+        }
         var positioned: [ExtractNode] = []
         for level in groups.keys.sorted() {
             for (row, node) in (groups[level] ?? []).enumerated() {
-                positioned.append(ExtractNode(node: node, position: .init(x: 70 + CGFloat(level) * 250, y: 80 + CGFloat(row) * 112)))
+                positioned.append(ExtractNode(node: node, position: .init(x: 70 + CGFloat(level) * 250, y: 80 + CGFloat(row) * 132)))
             }
         }
         self.nodes = positioned
