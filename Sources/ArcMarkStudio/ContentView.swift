@@ -63,6 +63,12 @@ private struct Toolbar: View {
     var body: some View {
         HStack(spacing: 14) {
             Text("Diagram canvas").font(.headline)
+            Button { store.newDiagram() } label: { Label("New", systemImage: "doc.badge.plus") }
+                .buttonStyle(.bordered)
+                .keyboardShortcut("n", modifiers: .command)
+            Button { store.chooseArcToOpen() } label: { Label("Open", systemImage: "folder") }
+                .buttonStyle(.bordered)
+                .keyboardShortcut("o", modifiers: .command)
             Spacer()
             Menu { ForEach(NodeKind.allCases) { kind in Button("Add \(kind.rawValue.capitalized)") { store.addNode(kind: kind) } } } label: { Label("Add node", systemImage: "plus") }
                 .menuStyle(.borderlessButton)

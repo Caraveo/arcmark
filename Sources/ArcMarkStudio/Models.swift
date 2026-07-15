@@ -29,6 +29,16 @@ final class DiagramStore: ObservableObject {
     var selectedNode: DiagramNode? { nodes.first { $0.id == selectedID } }
 
     init() { relationships = [.init(from: nodes[0].id, to: nodes[1].id, type: "places"), .init(from: nodes[1].id, to: nodes[2].id, type: "charges")] }
+    func newDiagram() {
+        title = "Untitled Diagram"
+        nodes = []
+        relationships = []
+        selectedID = nil
+        selectedRelation = nil
+        connectionSourceID = nil
+        zoom = 1
+        importError = nil
+    }
     func addNode(kind: NodeKind) { let n = DiagramNode(name: "New \(kind.rawValue.capitalized)", kind: kind, position: .init(x: 360, y: 360), fields: []); nodes.append(n); selectedID = n.id }
     func addRelationship(from: UUID, to: UUID, type: String = "relates to") {
         guard from != to, !type.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
@@ -55,6 +65,18 @@ final class DiagramStore: ObservableObject {
             importError = nil
         } catch {
             importError = error.localizedDescription
+        }
+    }
+    func chooseArcToOpen() {
+        let panel = NSOpenPanel()
+        panel.title = "Open ArcMark Diagram"
+        panel.message = "Choose an ArcMark .arc document to load into the editor."
+        panel.allowedContentTypes = [.arcMark]
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        panel.begin { response in
+            guard response == .OK, let url = panel.url else { return }
+            self.openArc(at: url)
         }
     }
     func saveArc() {

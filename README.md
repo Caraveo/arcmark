@@ -49,6 +49,8 @@ Every document begins with the ArcMark declaration and standard version:
 
 ArcMark Studio is the Mac-native editor for the standard. Build a system naturally on a draggable SwiftUI canvas, connect nodes directly, edit fields in place, name the diagram, and save the result as an `.arc` document that macOS recognizes as an ArcMark file.
 
+Start a blank diagram with **New** (⌘N), use **Open…** (⌘O) to load an existing `.arc` document, and use **Save As .arc** to keep each design as its own portable file.
+
 ### Canvas editor
 
 ![ArcMark Studio canvas editor](Assets/arcmark-studio-canvas.png)
