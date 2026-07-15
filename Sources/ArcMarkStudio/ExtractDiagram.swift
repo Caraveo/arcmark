@@ -17,16 +17,26 @@ struct ExtractLoop: Identifiable {
 
 private func extractRoute(from source: ExtractNode, to target: ExtractNode) -> [CGPoint] {
     if target.position.y > source.position.y {
-        let start = CGPoint(x: source.position.x + 90, y: source.position.y + 70)
+        // Prefer the left-to-right flow corridor, then descend into the child row.
+        // The final vertical segment still enters through the target's top edge.
+        guard target.position.x > source.position.x else {
+            let start = CGPoint(x: source.position.x + 90, y: source.position.y + 70), end = CGPoint(x: target.position.x + 90, y: target.position.y), laneY = (start.y + end.y) / 2
+            return [start, CGPoint(x: start.x, y: laneY), CGPoint(x: end.x, y: laneY), end]
+        }
+        let start = CGPoint(x: source.position.x + 180, y: source.position.y + 35)
         let end = CGPoint(x: target.position.x + 90, y: target.position.y)
-        let laneY = (start.y + end.y) / 2
-        return [start, CGPoint(x: start.x, y: laneY), CGPoint(x: end.x, y: laneY), end]
+        let laneX = (start.x + end.x) / 2, entryY = end.y - 28
+        return [start, CGPoint(x: laneX, y: start.y), CGPoint(x: laneX, y: entryY), CGPoint(x: end.x, y: entryY), end]
     }
     if target.position.y < source.position.y {
-        let start = CGPoint(x: source.position.x + 90, y: source.position.y)
+        guard target.position.x > source.position.x else {
+            let start = CGPoint(x: source.position.x + 90, y: source.position.y), end = CGPoint(x: target.position.x + 90, y: target.position.y + 70), laneY = (start.y + end.y) / 2
+            return [start, CGPoint(x: start.x, y: laneY), CGPoint(x: end.x, y: laneY), end]
+        }
+        let start = CGPoint(x: source.position.x + 180, y: source.position.y + 35)
         let end = CGPoint(x: target.position.x + 90, y: target.position.y + 70)
-        let laneY = (start.y + end.y) / 2
-        return [start, CGPoint(x: start.x, y: laneY), CGPoint(x: end.x, y: laneY), end]
+        let laneX = (start.x + end.x) / 2, entryY = end.y + 28
+        return [start, CGPoint(x: laneX, y: start.y), CGPoint(x: laneX, y: entryY), CGPoint(x: end.x, y: entryY), end]
     }
     if target.position.x >= source.position.x {
         return [CGPoint(x: source.position.x + 180, y: source.position.y + 35), CGPoint(x: target.position.x, y: target.position.y + 35)]
