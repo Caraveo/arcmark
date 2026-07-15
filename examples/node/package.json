@@ -1,0 +1,17 @@
+{
+  "name": "arcmark-examples-node",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Node.js example for @caraveo/arcmark-viewer.",
+  "scripts": {
+    "start": "node server.js",
+    "install:viewer": "npm install ../../packages/arcmark-viewer"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@caraveo/arcmark-viewer": "file:../../packages/arcmark-viewer"
+  }
+}

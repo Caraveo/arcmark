@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ArcMark Node Example</title>
+  <style>
+    body { font-family: ui-sans-serif, system-ui, sans-serif; margin: 32px; color: #172033; }
+    h1 { font-size: 18px; }
+    p { color: #4c576f; max-width: 60ch; }
+    arcmark-diagram { display: block; margin-top: 16px; }
+    .meta { font-size: 12px; color: #718096; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <h1>Commerce Domain</h1>
+  <p>
+    This page loads <code>@caraveo/arcmark-viewer</code> as a web component and
+    points it at <code>commerce.arc</code> by URL. The same document can be
+    served from any static host or backend and rendered the same way.
+  </p>
+
+  <arcmark-diagram src="/commerce.arc"></arcmark-diagram>
+
+  <div class="meta" id="meta">Loading diagram…</div>
+
+  <script type="module">
+    import "/arcmark-viewer.js";
+
+    const diagram = document.querySelector("arcmark-diagram");
+
+    diagram.addEventListener("arcmark-load", (event) => {
+      const model = event.detail;
+      document.getElementById("meta").textContent =
+        `Loaded "${model.title}" with ${model.nodes.length} nodes and ${model.relationships.length} relationships.`;
+    });
+
+    diagram.addEventListener("arcmark-error", (event) => {
+      document.getElementById("meta").textContent = `Error: ${event.detail.message}`;
+    });
+  </script>
+</body>
+</html>
