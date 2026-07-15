@@ -31,8 +31,15 @@ final class DiagramStore: ObservableObject {
     func deleteSelected() { guard let id = selectedID else { return }; nodes.removeAll {$0.id == id}; relationships.removeAll {$0.from == id || $0.to == id}; selectedID = nil }
     func xml() -> String {
         func escape(_ s: String) -> String { s.replacingOccurrences(of: "&", with: "&amp;").replacingOccurrences(of: "\"", with: "&quot;") }
-        let ns = nodes.map { n in "    <node id=\"n\(n.id.uuidString.replacingOccurrences(of: \"-\", with: \"\"))\" name=\"\(escape(n.name))\" kind=\"\(n.kind.rawValue)\" x=\"\(Int(n.position.x))\" y=\"\(Int(n.position.y))\">\n" + n.fields.map { "      <field name=\"\(escape($0.name))\" type=\"\(escape($0.type))\"/>" }.joined(separator: "\n") + "\n    </node>" }.joined(separator: "\n")
-        let rs = relationships.compactMap { r -> String? in guard let a = nodes.first(where: {$0.id == r.from}), let b = nodes.first(where: {$0.id == r.to}) else{return nil}; return "    <relationship from=\"n\(a.id.uuidString.replacingOccurrences(of: \"-\", with: \"\"))\" to=\"n\(b.id.uuidString.replacingOccurrences(of: \"-\", with: \"\"))\" type=\"\(escape(r.type))\"/>" }.joined(separator: "\n")
+        func xmlID(_ id: UUID) -> String { "n" + id.uuidString.replacingOccurrences(of: "-", with: "") }
+        let ns = nodes.map { n in
+            let fields = n.fields.map { "      <field name=\"\(escape($0.name))\" type=\"\(escape($0.type))\"/>" }.joined(separator: "\n")
+            return "    <node id=\"\(xmlID(n.id))\" name=\"\(escape(n.name))\" kind=\"\(n.kind.rawValue)\" x=\"\(Int(n.position.x))\" y=\"\(Int(n.position.y))\">\n\(fields)\n    </node>"
+        }.joined(separator: "\n")
+        let rs = relationships.compactMap { r -> String? in
+            guard let a = nodes.first(where: { $0.id == r.from }), let b = nodes.first(where: { $0.id == r.to }) else { return nil }
+            return "    <relationship from=\"\(xmlID(a.id))\" to=\"\(xmlID(b.id))\" type=\"\(escape(r.type))\"/>"
+        }.joined(separator: "\n")
         return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<arcmark version=\"1.0\">\n  <diagram title=\"\(escape(title))\">\n  <nodes>\n\(ns)\n  </nodes>\n  <relationships>\n\(rs)\n  </relationships>\n  </diagram>\n</arcmark>"
     }
 }
