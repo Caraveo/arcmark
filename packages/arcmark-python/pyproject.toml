@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "arcmark"
-version = "1.0.2"
+version = "1.0.3"
 description = "Read, validate, and render ArcMark Standard .arc system diagrams."
 readme = "README.md"
 requires-python = ">=3.10"

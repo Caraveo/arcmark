@@ -1,6 +1,6 @@
 # ArcMark npm package
 
-## `@caraveo/arcmark-viewer` v1.0.3
+## `@caraveo/arcmark-viewer` v1.0.4
 
 `@caraveo/arcmark-viewer` is ArcMark's public npm package for showing a portable ArcMark system design in a browser. It is a small, dependency-free web component: author a diagram in ArcMark Studio, save the `.arc` document, and render the same source of truth in a documentation site, engineering portal, product surface, or Electron app.
 
@@ -28,7 +28,7 @@ The element emits `arcmark-load` when a diagram is ready and `arcmark-error` whe
 
 ## What it includes
 
-- ArcMark Standard v1.0.0 XML parsing.
+- ArcMark Standard v1.1.0 XML parsing (with v1.0.0 read support).
 - Entity, service, event, field, and relationship rendering.
 - A browser-native custom element with no runtime npm dependencies.
 - A public package name: `@caraveo/arcmark-viewer`.

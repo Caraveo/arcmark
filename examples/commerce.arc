@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<arcmark version="1.0.0">
-  <diagram title="Commerce Domain">
+<arcmark version="1.1.0">
+  <diagram title="Commerce Domain" owner="Commerce Team" creator-id="u_jon">
     <nodes>
       <node id="n_customer" name="Customer" kind="entity" x="80" y="160">
         <field name="customerId" type="UUID"/>

@@ -1,6 +1,6 @@
 # arcmark
 
-`arcmark` is the Python toolkit for Universal System Design. It reads, checks, and renders ArcMark Standard v1.0.0 `.arc` documents so the system model authored in ArcMark Studio can participate in automation, documentation, and engineering workflows.
+`arcmark` is the Python toolkit for Universal System Design. It reads, checks, and renders ArcMark Standard v1.1.0 `.arc` documents (and reads v1.0.0 documents) so the system model authored in ArcMark Studio can participate in automation, documentation, and engineering workflows.
 
 Use it when a diagram needs to become more than a picture: inspect a service graph in CI, validate relationship references before a release, generate SVG for a documentation site, or build your own architecture-aware tooling around a portable system model.
 

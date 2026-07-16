@@ -1,4 +1,4 @@
-"""Parser and generic SVG renderer for ArcMark Standard v1.0.0 diagrams."""
+"""Parser and generic SVG renderer for ArcMark Standard v1.1.0 diagrams."""
 
 from __future__ import annotations
 
@@ -12,7 +12,8 @@ class ArcMarkError(ValueError):
     """Raised when an ArcMark document is malformed or incompatible."""
 
 
-STANDARD_VERSION = "1.0.0"
+STANDARD_VERSION = "1.1.0"
+SUPPORTED_VERSIONS = frozenset({"1.0.0", "1.1.0"})
 NODE_KINDS = frozenset({"entity", "service", "event"})
 
 
@@ -47,6 +48,8 @@ class ArcMarkDiagram:
     nodes: tuple[ArcMarkNode, ...]
     relationships: tuple[ArcMarkRelationship, ...]
     version: str = STANDARD_VERSION
+    owner: str | None = None
+    creator_id: str | None = None
 
     @classmethod
     def from_file(cls, path: str | Path) -> "ArcMarkDiagram":
@@ -55,7 +58,7 @@ class ArcMarkDiagram:
 
     @classmethod
     def from_xml(cls, xml: str) -> "ArcMarkDiagram":
-        """Parse and validate the structural requirements of ArcMark Standard v1.0.0."""
+        """Parse and validate the structural requirements of ArcMark Standard v1.1.0."""
         try:
             root = ET.fromstring(xml)
         except ET.ParseError as error:
@@ -63,12 +66,14 @@ class ArcMarkDiagram:
         if root.tag != "arcmark":
             raise ArcMarkError("Expected an <arcmark> root element.")
         version = root.get("version")
-        if version != STANDARD_VERSION:
+        if version not in SUPPORTED_VERSIONS:
             raise ArcMarkError(f"Unsupported ArcMark version: {version or 'missing'}. Expected {STANDARD_VERSION}.")
         diagrams = root.findall("diagram")
         if len(diagrams) != 1 or not diagrams[0].get("title"):
             raise ArcMarkError("Expected a <diagram> with a title.")
         diagram = diagrams[0]
+        owner = diagram.get("owner") or None
+        creator_id = diagram.get("creator-id") or None
         nodes_element = diagram.find("nodes")
         if nodes_element is None:
             raise ArcMarkError("A diagram requires a <nodes> element.")
@@ -104,7 +109,7 @@ class ArcMarkDiagram:
             if from_id not in ids or to_id not in ids:
                 raise ArcMarkError(f"Relationship {relation_type} references an unknown node.")
             relationships.append(ArcMarkRelationship(from_id, to_id, relation_type))
-        return cls(diagram.attrib["title"], tuple(nodes), tuple(relationships), version)
+        return cls(diagram.attrib["title"], tuple(nodes), tuple(relationships), version, owner, creator_id)
 
     def to_svg(self) -> str:
         """Render a portable, self-contained SVG suitable for an HTML response or file."""

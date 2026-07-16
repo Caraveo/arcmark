@@ -21,6 +21,8 @@ final class DiagramStore: ObservableObject {
         .init(name: "Billing Service", kind: .service, position: .init(x: 880, y: 300), fields: [.init(name: "charge(order)", type: "Payment")])
     ]
     @Published var relationships: [Relationship] = []
+    @Published var owner: String = ""
+    @Published var creatorID: String = ""
     @Published var selectedID: UUID? = nil
     @Published var selectedRelation: UUID? = nil
     @Published var connectionSourceID: UUID? = nil
@@ -33,6 +35,8 @@ final class DiagramStore: ObservableObject {
         title = "Untitled Diagram"
         nodes = []
         relationships = []
+        owner = ""
+        creatorID = ""
         selectedID = nil
         selectedRelation = nil
         connectionSourceID = nil
@@ -59,6 +63,8 @@ final class DiagramStore: ObservableObject {
             title = imported.title
             nodes = imported.nodes
             relationships = imported.relationships
+            owner = imported.owner ?? ""
+            creatorID = imported.creatorID ?? ""
             selectedID = nil
             selectedRelation = nil
             connectionSourceID = nil
@@ -101,6 +107,8 @@ final class DiagramStore: ObservableObject {
             guard let a = nodes.first(where: { $0.id == r.from }), let b = nodes.first(where: { $0.id == r.to }) else { return nil }
             return "    <relationship from=\"\(xmlID(a.id))\" to=\"\(xmlID(b.id))\" type=\"\(escape(r.type))\"/>"
         }.joined(separator: "\n")
-        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<arcmark version=\"1.0.0\">\n  <diagram title=\"\(escape(title))\">\n  <nodes>\n\(ns)\n  </nodes>\n  <relationships>\n\(rs)\n  </relationships>\n  </diagram>\n</arcmark>"
+        let ownerAttr = owner.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "" : " owner=\"\(escape(owner))\""
+        let creatorAttr = creatorID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "" : " creator-id=\"\(escape(creatorID))\""
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<arcmark version=\"1.1.0\">\n  <diagram title=\"\(escape(title))\"\(ownerAttr)\(creatorAttr)>\n  <nodes>\n\(ns)\n  </nodes>\n  <relationships>\n\(rs)\n  </relationships>\n  </diagram>\n</arcmark>"
     }
 }

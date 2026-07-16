@@ -49,7 +49,7 @@ private struct Sidebar: View {
             }.listStyle(.sidebar)
             Spacer()
             VStack(alignment: .leading, spacing: 7) {
-                Label("ArcMark Standard v1.0.0", systemImage: "checkmark.seal.fill").font(.caption).foregroundStyle(.green)
+                Label("ArcMark Standard v1.1.0", systemImage: "checkmark.seal.fill").font(.caption).foregroundStyle(.green)
                 Text(".arc document format").font(.caption2).foregroundStyle(.secondary)
             }.padding(16).frame(maxWidth: .infinity, alignment: .leading).background(.quaternary)
         }
@@ -148,10 +148,25 @@ private struct Inspector: View {
         VStack(alignment: .leading, spacing: 0) {
             Text("INSPECTOR").font(.caption.weight(.bold)).tracking(1.5).foregroundStyle(.secondary).padding(20)
             Divider()
-            if let n = store.selectedNode { NodeInspector(store: store, node: n) } else { ContentUnavailableView("Select an element", systemImage: "cursorarrow.click", description: Text("Click a node on the canvas to edit its structure.")) }
+            if let n = store.selectedNode { NodeInspector(store: store, node: n) }
+            else { DocumentInspector(store: store) }
             Spacer()
         }.background(.bar)
     }
+}
+
+private struct DocumentInspector: View {
+    @ObservedObject var store: DiagramStore
+    var body: some View { Form {
+        Section("Document") {
+            TextField("Name", text: $store.title)
+            TextField("Owner", text: $store.owner)
+            TextField("Creator ID", text: $store.creatorID)
+        }
+        Section {
+            ContentUnavailableView("Select an element", systemImage: "cursorarrow.click", description: Text("Click a node on the canvas to edit its structure."))
+        }
+    }.formStyle(.grouped) }
 }
 
 private struct NodeInspector: View {

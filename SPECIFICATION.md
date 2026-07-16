@@ -1,8 +1,8 @@
-# ArcMark Standard v1.0.0
+# ArcMark Standard v1.1.0
 
 ## Status
 
-This document defines ArcMark Standard v1.0.0, an XML-based interchange format for UML-inspired system diagrams. An ArcMark document MUST use the `.arc` filename extension and SHOULD use UTF-8 encoding. It is validated by `arcmark.xsd`.
+This document defines ArcMark Standard v1.1.0, an XML-based interchange format for UML-inspired system diagrams. An ArcMark document MUST use the `.arc` filename extension and SHOULD use UTF-8 encoding. It is validated by `arcmark.xsd`.
 
 ## Identifier and file association
 
@@ -12,7 +12,7 @@ This document defines ArcMark Standard v1.0.0, an XML-based interchange format f
 | Uniform Type Identifier | `com.arcmark.diagram` |
 | Conforms to | `public.xml` |
 | Root element | `arcmark` |
-| Current version | `1.0.0` |
+| Current version | `1.1.0` |
 
 The `.arc` suffix identifies an ArcMark diagram, not a generic XML file. The underlying syntax is XML for compatibility with standard validators and tooling.
 
@@ -20,8 +20,8 @@ The `.arc` suffix identifies an ArcMark diagram, not a generic XML file. The und
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<arcmark version="1.0.0">
-  <diagram title="Commerce Domain">
+<arcmark version="1.1.0">
+  <diagram title="Commerce Domain" owner="Commerce Team" creator-id="u_jon">
     <nodes>
       <node id="n_customer" name="Customer" kind="entity" x="180" y="220">
         <field name="customerId" type="UUID"/>
@@ -39,7 +39,7 @@ The `.arc` suffix identifies an ArcMark diagram, not a generic XML file. The und
 
 `arcmark` is the document root. Its required `version` attribute specifies the ArcMark format version.
 
-`diagram` contains one model and has the required user-facing `title` attribute.
+`diagram` contains one model and has the required user-facing `title` attribute. The optional `owner` attribute names the owner of the document, and the optional `creator-id` attribute identifies the creator of the document generator. `owner` and `creator-id` are free-form strings; their meaning is governed by the application or organization that owns the diagram. Readers SHOULD preserve them and presenters SHOULD surface them as document metadata.
 
 `nodes` contains one or more `node` elements. A node has a globally unique XML `id`, `name`, a `kind`, and canvas coordinates `x` and `y`. Valid kinds are `entity`, `service`, and `event`.
 
@@ -50,9 +50,9 @@ The `.arc` suffix identifies an ArcMark diagram, not a generic XML file. The und
 ## Compatibility rules
 
 - Readers MUST reject a document with a root other than `arcmark`.
-- Readers MUST reject a document whose `arcmark` version is not `1.0.0`.
+- Readers MUST reject a document whose `arcmark` version is not supported. ArcMark Standard v1.1.0 supports `1.1.0`; readers SHOULD also accept `1.0.0` so earlier documents remain readable.
 - Readers MUST support the three ArcMark 1.0 node kinds.
-- Readers SHOULD preserve unknown attributes and elements when possible to support forward compatibility.
+- Readers SHOULD preserve `owner`, `creator-id`, and unknown attributes and elements when possible to support forward compatibility.
 - Coordinates are decimal canvas units, with the top-left canvas origin at `(0, 0)`.
 - IDs MUST be XML `ID` values and relationship endpoints MUST resolve to defined node IDs.
 

@@ -7,8 +7,8 @@
 [![macOS](https://img.shields.io/badge/platform-macOS-blue.svg)](https://www.apple.com/macos/)
 [![Swift](https://img.shields.io/badge/Swift-5.9-orange.svg)](https://swift.org/)
 [![SwiftUI](https://img.shields.io/badge/SwiftUI-4.0-blue.svg)](https://developer.apple.com/xcode/swiftui/)
-[![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)](https://github.com/Caraveo/arcmark/releases)
-[![ArcMark Standard](https://img.shields.io/badge/ArcMark%20Standard-v1.0.0-6D4AFF.svg)](SPECIFICATION.md)
+[![Version](https://img.shields.io/badge/version-0.5.0-blue.svg)](https://github.com/Caraveo/arcmark/releases)
+[![ArcMark Standard](https://img.shields.io/badge/ArcMark%20Standard-v1.1.0-6D4AFF.svg)](SPECIFICATION.md)
 [![XML](https://img.shields.io/badge/XML-1.0-0060AC.svg)](https://www.w3.org/TR/xml/)
 [![Status](https://img.shields.io/badge/status-PREALPHA-red.svg)](https://github.com/Caraveo/arcmark)
 
@@ -22,7 +22,7 @@ The goal is straightforward: make system design durable, inspectable, and easy t
 
 ## The ArcMark Standard
 
-**ArcMark Standard v1.0.0** is the open, XML-based model behind an ArcMark diagram. Documents use the intentional `.arc` extension, are UTF-8 encoded, and are defined by the bundled [`arcmark.xsd`](Sources/ArcMarkStudio/Resources/arcmark.xsd) schema and [format specification](SPECIFICATION.md).
+**ArcMark Standard v1.1.0** is the open, XML-based model behind an ArcMark diagram. Documents use the intentional `.arc` extension, are UTF-8 encoded, and are defined by the bundled [`arcmark.xsd`](Sources/ArcMarkStudio/Resources/arcmark.xsd) schema and [format specification](SPECIFICATION.md).
 
 An ArcMark document stores the things a system needs to communicate:
 
@@ -30,6 +30,7 @@ An ArcMark document stores the things a system needs to communicate:
 - Fields that describe each node's shape.
 - Directed, typed relationships that describe how the system behaves.
 - Canvas coordinates for editing without making presentation layout part of the model.
+- Optional `owner` and `creator-id` attributes on the diagram that record who owns the document and who owns the document generator.
 
 Because the model is plain structured data, the same `.arc` file can power a native editor, a documentation site, an API workflow, or automated analysis.
 
@@ -37,8 +38,8 @@ Every document begins with the ArcMark declaration and standard version:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<arcmark version="1.0.0">
-  <diagram title="Commerce Domain">
+<arcmark version="1.1.0">
+  <diagram title="Commerce Domain" owner="Commerce Team" creator-id="u_jon">
     <nodes />
     <relationships />
   </diagram>
@@ -102,7 +103,7 @@ See [`packages/arcmark-python`](packages/arcmark-python) for the API and CLI.
 
 ## Run ArcMark Studio
 
-**Current app version:** ArcMark Studio v0.4.0 · **Current document standard:** ArcMark Standard v1.0.0
+**Current app version:** ArcMark Studio v0.5.0 · **Current document standard:** ArcMark Standard v1.1.0
 
 ```bash
 swift run

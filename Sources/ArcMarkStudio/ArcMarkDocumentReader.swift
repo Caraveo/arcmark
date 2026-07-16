@@ -4,22 +4,30 @@ struct ImportedArcMarkDiagram {
     let title: String
     let nodes: [DiagramNode]
     let relationships: [Relationship]
+    let owner: String?
+    let creatorID: String?
 }
 
 enum ArcMarkDocumentReader {
+    static let supportedVersions: Set<String> = ["1.0.0", "1.1.0"]
     static func read(from url: URL) throws -> ImportedArcMarkDiagram {
         let document = try XMLDocument(contentsOf: url, options: [])
         guard let root = document.rootElement(), root.name == "arcmark" else {
             throw ArcMarkDocumentError.invalidRoot
         }
-        guard root.attribute(forName: "version")?.stringValue == "1.0.0" else {
-            throw ArcMarkDocumentError.unsupportedVersion(root.attribute(forName: "version")?.stringValue)
+        let version = root.attribute(forName: "version")?.stringValue
+        guard let version, Self.supportedVersions.contains(version) else {
+            throw ArcMarkDocumentError.unsupportedVersion(version)
         }
         guard let diagram = root.elements(forName: "diagram").first else {
             throw ArcMarkDocumentError.missingDiagram
         }
 
         let title = diagram.attribute(forName: "title")?.stringValue?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let rawOwner = diagram.attribute(forName: "owner")?.stringValue?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let owner = (rawOwner?.isEmpty == false) ? rawOwner : nil
+        let rawCreatorID = diagram.attribute(forName: "creator-id")?.stringValue?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let creatorID = (rawCreatorID?.isEmpty == false) ? rawCreatorID : nil
         var ids: [String: UUID] = [:]
         var nodes: [DiagramNode] = []
         let nodeElements = diagram.elements(forName: "nodes").first?.elements(forName: "node") ?? []
@@ -55,7 +63,9 @@ enum ArcMarkDocumentReader {
         return ImportedArcMarkDiagram(
             title: title?.isEmpty == false ? title! : "ArcMark Diagram",
             nodes: nodes,
-            relationships: relationships
+            relationships: relationships,
+            owner: owner,
+            creatorID: creatorID
         )
     }
 

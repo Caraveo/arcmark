@@ -1,6 +1,6 @@
 {
   "name": "@caraveo/arcmark-viewer",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A dependency-free web component for displaying ArcMark Standard .arc system diagrams.",
   "type": "module",
   "main": "./src/arcmark-viewer.js",

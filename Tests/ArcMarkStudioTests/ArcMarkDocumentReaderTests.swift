@@ -5,8 +5,8 @@ import Foundation
 @Test func readsAnArcMarkDocument() throws {
         let document = """
         <?xml version="1.0" encoding="UTF-8"?>
-        <arcmark version="1.0.0">
-          <diagram title="Import Test">
+        <arcmark version="1.1.0">
+          <diagram title="Import Test" owner="Retail Apps" creator-id="u_jon">
             <nodes>
               <node id="customer" name="Customer" kind="entity" x="120" y="80">
                 <field name="customerId" type="UUID"/>
@@ -26,6 +26,8 @@ import Foundation
         let imported = try ArcMarkDocumentReader.read(from: url)
 
         #expect(imported.title == "Import Test")
+        #expect(imported.owner == "Retail Apps")
+        #expect(imported.creatorID == "u_jon")
         #expect(imported.nodes.map { $0.name } == ["Customer", "Billing Service"])
         #expect(imported.nodes.first?.fields.count == 1)
         #expect(imported.nodes.first?.fields.first?.name == "customerId")

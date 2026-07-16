@@ -10,8 +10,8 @@ const { parseArcMark } = await import("../src/arcmark-viewer.js");
 
 test("parses a complete ArcMark Standard document", () => {
   const model = parseArcMark(`<?xml version="1.0" encoding="UTF-8"?>
-<arcmark version="1.0.0">
-  <diagram title="Commerce Domain">
+<arcmark version="1.1.0">
+  <diagram title="Commerce Domain" owner="Commerce Team" creator-id="u_jon">
     <nodes>
       <node id="customer" name="Customer" kind="entity" x="120" y="80">
         <field name="customerId" type="UUID"/>
@@ -25,7 +25,9 @@ test("parses a complete ArcMark Standard document", () => {
 </arcmark>`);
 
   assert.equal(model.title, "Commerce Domain");
-  assert.equal(model.version, "1.0.0");
+  assert.equal(model.version, "1.1.0");
+  assert.equal(model.owner, "Commerce Team");
+  assert.equal(model.creatorID, "u_jon");
   assert.deepEqual(model.nodes, [
     {
       id: "customer",
@@ -74,7 +76,9 @@ test("parses the checked-in Commerce Domain example", () => {
   const model = parseArcMark(readFileSync(fileURLToPath(exampleURL), "utf8"));
 
   assert.equal(model.title, "Commerce Domain");
-  assert.equal(model.version, "1.0.0");
+  assert.equal(model.version, "1.1.0");
+  assert.equal(model.owner, "Commerce Team");
+  assert.equal(model.creatorID, "u_jon");
   assert.equal(model.nodes.length, 5);
   assert.equal(model.relationships.length, 5);
 });

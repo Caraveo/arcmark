@@ -2,7 +2,7 @@
 
 Runnable examples for the two delivery packages, sharing a single `.arc` document:
 
-- [`commerce.arc`](commerce.arc) — an ArcMark Standard v1.0.0 document modeling a small commerce domain (entities, services, an event, and directed relationships).
+- [`commerce.arc`](commerce.arc) — an ArcMark Standard v1.1.0 document modeling a small commerce domain (entities, services, an event, and directed relationships), with `owner` and `creator-id` metadata.
 - [`node/`](node) — a dependency-free static server that loads `@caraveo/arcmark-viewer` and renders `commerce.arc` in a browser.
 - [`python/`](python) — scripts that read, inspect, and render `commerce.arc` with the `arcmark` package.
 
