@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ArcMark Editor</title>
+  <link rel="stylesheet" href="/public/editor.css" />
+  <script type="module" src="/viewer/arcmark-viewer.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">◆</span>
+      <strong>ArcMark Editor</strong>
+      <small>v0.1.0 · Standard v1.1.0</small>
+    </div>
+    <div class="actions">
+      <button id="newBtn" type="button">New</button>
+      <button id="openBtn" type="button">Open .arc</button>
+      <label class="import-hidden">
+        <input id="fileInput" type="file" accept=".arc,application/xml,text/xml" hidden />
+      </label>
+      <button id="saveBtn" type="button" class="primary">Save .arc</button>
+      <button id="saveToServerBtn" type="button">Save to diagrams/</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <input id="titleInput" class="title-input" type="text" value="Untitled Diagram" placeholder="Diagram name" />
+        <input id="ownerInput" class="meta-input" type="text" placeholder="Owner" />
+        <input id="creatorInput" class="meta-input" type="text" placeholder="Creator ID" />
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">NODES</div>
+        <ul id="nodeList" class="node-list"></ul>
+        <div class="add-row">
+          <button data-kind="entity" type="button">+ Entity</button>
+          <button data-kind="service" type="button">+ Service</button>
+          <button data-kind="event" type="button">+ Event</button>
+        </div>
+      </div>
+      <div class="sidebar-footer">ArcMark Standard v1.1.0 · owner &amp; creator-id</div>
+    </aside>
+
+    <section class="canvas-wrap">
+      <div class="canvas-toolbar">
+        <span class="hint" id="hint">Drag nodes · Click a node then Connect to link it</span>
+        <div class="canvas-actions">
+          <button id="connectBtn" type="button" disabled>Connect</button>
+          <button id="deleteBtn" type="button" disabled>Delete</button>
+        </div>
+      </div>
+      <div id="canvas" class="canvas"></div>
+    </section>
+
+    <aside class="inspector">
+      <div class="sidebar-title">INSPECTOR</div>
+      <div id="inspector" class="inspector-body">
+        <div class="empty">Select a node to edit it.</div>
+      </div>
+      <div class="sidebar-title preview-title">RENDER PREVIEW</div>
+      <div class="preview-wrap">
+        <arcmark-diagram id="preview"></arcmark-diagram>
+      </div>
+    </aside>
+  </main>
+
+  <script type="module" src="/public/editor.js"></script>
+</body>
+</html>

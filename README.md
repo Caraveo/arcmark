@@ -22,7 +22,7 @@ The goal is straightforward: make system design durable, inspectable, and easy t
 
 ## The ArcMark Standard
 
-**ArcMark Standard v1.1.0** is the open, XML-based model behind an ArcMark diagram. Documents use the intentional `.arc` extension, are UTF-8 encoded, and are defined by the bundled [`arcmark.xsd`](Sources/ArcMarkStudio/Resources/arcmark.xsd) schema and [format specification](SPECIFICATION.md).
+**ArcMark Standard v1.1.0** is the open, XML-based model behind an ArcMark diagram. Documents use the intentional `.arc` extension, are UTF-8 encoded, and are defined by the bundled [`arcmark.xsd`](editors/Mac/Sources/ArcMarkStudio/Resources/arcmark.xsd) schema and [format specification](SPECIFICATION.md).
 
 An ArcMark document stores the things a system needs to communicate:
 
@@ -45,6 +45,13 @@ Every document begins with the ArcMark declaration and standard version:
   </diagram>
 </arcmark>
 ```
+
+## Editors
+
+ArcMark's editors live in [`editors/`](editors):
+
+- [**`editors/Mac`**](editors/Mac) — **ArcMark Studio**, the Mac-native SwiftUI editor. Build a system on a draggable canvas, connect nodes directly, edit fields in place, extract a System Design Overview, and save `.arc` documents.
+- [**`editors/NodeJS`**](editors/NodeJS) — a dependency-free Node.js web editor for authoring `.arc` documents in the browser. Draggable canvas, directed relationships, owner/creator-id metadata, and live render preview via `@caraveo/arcmark-viewer`. Double-click `ArcMark Editor.command` on macOS for quick access.
 
 ## ArcMark Studio
 
@@ -106,15 +113,17 @@ See [`packages/arcmark-python`](packages/arcmark-python) for the API and CLI.
 **Current app version:** ArcMark Studio v0.5.0 · **Current document standard:** ArcMark Standard v1.1.0
 
 ```bash
+cd editors/Mac
 swift run
 ```
 
 To build a release executable:
 
 ```bash
+cd editors/Mac
 swift build -c release
 ```
 
 ## macOS document support
 
-ArcMark Studio registers the `com.arcmark.diagram` Uniform Type Identifier, declares itself as the Editor for that type, and claims `.arc` files in [`ArcMarkStudio-Info.plist`](ArcMarkStudio-Info.plist). When packaging the executable as an `.app`, macOS Launch Services associates `.arc` files with ArcMark Studio and shows it in **Open With**. On launch, the installed app refreshes that registration and sets itself as the `.arc` Editor. Opening an `.arc` file from Finder loads its title, nodes, fields, coordinates, and relationships directly into the editor.
+ArcMark Studio registers the `com.arcmark.diagram` Uniform Type Identifier, declares itself as the Editor for that type, and claims `.arc` files in [`ArcMarkStudio-Info.plist`](editors/Mac/ArcMarkStudio-Info.plist). When packaging the executable as an `.app`, macOS Launch Services associates `.arc` files with ArcMark Studio and shows it in **Open With**. On launch, the installed app refreshes that registration and sets itself as the `.arc` Editor. Opening an `.arc` file from Finder loads its title, nodes, fields, coordinates, and relationships directly into the editor.

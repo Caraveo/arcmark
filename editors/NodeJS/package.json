@@ -1,0 +1,37 @@
+{
+  "name": "arcmark-editor",
+  "version": "0.1.0",
+  "description": "A dependency-free Node.js web editor for authoring ArcMark Standard .arc system diagrams.",
+  "type": "module",
+  "bin": {
+    "arcmark-editor": "server.js"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "launch": "node server.js --open"
+  },
+  "keywords": [
+    "arcmark",
+    "diagram",
+    "system-design",
+    "uml",
+    "editor",
+    "web-component"
+  ],
+  "license": "MIT",
+  "author": "Caraveo",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Caraveo/arcmark-editor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Caraveo/arcmark-editor/issues"
+  },
+  "homepage": "https://github.com/Caraveo/arcmark-editor#readme",
+  "dependencies": {
+    "@caraveo/arcmark-viewer": "file:../../packages/arcmark-viewer"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

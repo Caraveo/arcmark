@@ -58,4 +58,4 @@ The `.arc` suffix identifies an ArcMark diagram, not a generic XML file. The und
 
 ## Schema
 
-The authoritative XSD is [arcmark.xsd](Sources/ArcMarkStudio/Resources/arcmark.xsd). Tools can validate a `.arc` file using any XML Schema 1.0-compatible validator.
+The authoritative XSD is [arcmark.xsd](editors/Mac/Sources/ArcMarkStudio/Resources/arcmark.xsd). Tools can validate a `.arc` file using any XML Schema 1.0-compatible validator.
