@@ -7,7 +7,7 @@
 [![macOS](https://img.shields.io/badge/platform-macOS-blue.svg)](https://www.apple.com/macos/)
 [![Swift](https://img.shields.io/badge/Swift-5.9-orange.svg)](https://swift.org/)
 [![SwiftUI](https://img.shields.io/badge/SwiftUI-4.0-blue.svg)](https://developer.apple.com/xcode/swiftui/)
-[![Version](https://img.shields.io/badge/version-0.5.0-blue.svg)](https://github.com/Caraveo/arcmark/releases)
+[![Version](https://img.shields.io/badge/version-0.6.0-blue.svg)](https://github.com/Caraveo/arcmark/releases)
 [![ArcMark Standard](https://img.shields.io/badge/ArcMark%20Standard-v1.1.0-6D4AFF.svg)](SPECIFICATION.md)
 [![XML](https://img.shields.io/badge/XML-1.0-0060AC.svg)](https://www.w3.org/TR/xml/)
 [![Status](https://img.shields.io/badge/status-PREALPHA-red.svg)](https://github.com/Caraveo/arcmark)
@@ -110,7 +110,7 @@ See [`packages/arcmark-python`](packages/arcmark-python) for the API and CLI.
 
 ## Run ArcMark Studio
 
-**Current app version:** ArcMark Studio v0.5.0 · **Current document standard:** ArcMark Standard v1.1.0
+**Current app version:** ArcMark Studio v0.6.0 · **Current document standard:** ArcMark Standard v1.1.0
 
 ```bash
 cd editors/Mac
