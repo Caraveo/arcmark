@@ -1,5 +1,7 @@
 import SwiftUI
 import AppKit
+import CoreServices
+import UniformTypeIdentifiers
 
 @main
 struct ArcMarkStudioApp: App {
@@ -20,6 +22,7 @@ final class ArcMarkApplicationDelegate: NSObject, NSApplicationDelegate {
         if let url = Bundle.module.url(forResource: "app-icon", withExtension: "png"), let icon = NSImage(contentsOf: url) {
             NSApp.applicationIconImage = icon
         }
+        registerArcMarkFileAssociation()
         bringEditorToFront()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
             self.bringEditorToFront()
@@ -30,6 +33,20 @@ final class ArcMarkApplicationDelegate: NSObject, NSApplicationDelegate {
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
         NSApp.windows.first(where: { $0.canBecomeKey })?.makeKeyAndOrderFront(nil)
+    }
+
+    /// Registers the installed application with Launch Services and makes it
+    /// the Editor for `.arc` documents.  The Info.plist remains the source of
+    /// truth; this refreshes macOS' database immediately after an update.
+    private func registerArcMarkFileAssociation() {
+        let bundle = Bundle.main
+        guard bundle.bundleURL.pathExtension == "app", let identifier = bundle.bundleIdentifier else { return }
+        _ = LSRegisterURL(bundle.bundleURL as CFURL, true)
+        _ = LSSetDefaultRoleHandlerForContentType(
+            UTType.arcMark.identifier as CFString,
+            .editor,
+            identifier as CFString
+        )
     }
 
     func application(_ application: NSApplication, open urls: [URL]) {

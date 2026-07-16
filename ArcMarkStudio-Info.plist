@@ -17,6 +17,7 @@
     <key>CFBundleTypeName</key><string>ArcMark Diagram</string>
     <key>CFBundleTypeRole</key><string>Editor</string>
     <key>LSHandlerRank</key><string>Owner</string>
+    <key>CFBundleTypeExtensions</key><array><string>arc</string></array>
     <key>LSItemContentTypes</key><array><string>com.arcmark.diagram</string></array>
   </dict></array>
   <key>UTExportedTypeDeclarations</key>

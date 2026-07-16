@@ -116,4 +116,4 @@ swift build -c release
 
 ## macOS document support
 
-ArcMark Studio registers the `com.arcmark.diagram` Uniform Type Identifier, declares itself as the Editor for that type, and claims `.arc` files in [`ArcMarkStudio-Info.plist`](ArcMarkStudio-Info.plist). When packaging the executable as an `.app`, macOS Launch Services associates `.arc` files with ArcMark Studio and shows it in **Open With**. Opening an `.arc` file from Finder loads its title, nodes, fields, coordinates, and relationships directly into the editor.
+ArcMark Studio registers the `com.arcmark.diagram` Uniform Type Identifier, declares itself as the Editor for that type, and claims `.arc` files in [`ArcMarkStudio-Info.plist`](ArcMarkStudio-Info.plist). When packaging the executable as an `.app`, macOS Launch Services associates `.arc` files with ArcMark Studio and shows it in **Open With**. On launch, the installed app refreshes that registration and sets itself as the `.arc` Editor. Opening an `.arc` file from Finder loads its title, nodes, fields, coordinates, and relationships directly into the editor.
