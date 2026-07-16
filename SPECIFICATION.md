@@ -50,6 +50,7 @@ The `.arc` suffix identifies an ArcMark diagram, not a generic XML file. The und
 ## Compatibility rules
 
 - Readers MUST reject a document with a root other than `arcmark`.
+- Readers MUST reject a document whose `arcmark` version is not `1.0.0`.
 - Readers MUST support the three ArcMark 1.0 node kinds.
 - Readers SHOULD preserve unknown attributes and elements when possible to support forward compatibility.
 - Coordinates are decimal canvas units, with the top-left canvas origin at `(0, 0)`.

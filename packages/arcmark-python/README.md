@@ -28,7 +28,7 @@ print(diagram.title)
 svg = diagram.to_svg()
 ```
 
-`from_xml()` and `from_file()` raise `ArcMarkError` for malformed documents, unsupported node types, duplicate IDs, and broken relationship references.
+`from_xml()` and `from_file()` raise `ArcMarkError` for malformed documents, unsupported ArcMark versions or node types, duplicate IDs, and broken relationship references.
 
 ## CLI
 

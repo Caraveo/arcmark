@@ -1,4 +1,4 @@
-"""Parser and generic SVG renderer for ArcMark 1.0 diagrams."""
+"""Parser and generic SVG renderer for ArcMark Standard v1.0.0 diagrams."""
 
 from __future__ import annotations
 
@@ -10,6 +10,10 @@ from html import escape
 
 class ArcMarkError(ValueError):
     """Raised when an ArcMark document is malformed or incompatible."""
+
+
+STANDARD_VERSION = "1.0.0"
+NODE_KINDS = frozenset({"entity", "service", "event"})
 
 
 @dataclass(frozen=True)
@@ -42,7 +46,7 @@ class ArcMarkDiagram:
     title: str
     nodes: tuple[ArcMarkNode, ...]
     relationships: tuple[ArcMarkRelationship, ...]
-    version: str = "1.0.0"
+    version: str = STANDARD_VERSION
 
     @classmethod
     def from_file(cls, path: str | Path) -> "ArcMarkDiagram":
@@ -51,7 +55,7 @@ class ArcMarkDiagram:
 
     @classmethod
     def from_xml(cls, xml: str) -> "ArcMarkDiagram":
-        """Parse and validate the structural requirements of ArcMark 1.0."""
+        """Parse and validate the structural requirements of ArcMark Standard v1.0.0."""
         try:
             root = ET.fromstring(xml)
         except ET.ParseError as error:
@@ -59,22 +63,22 @@ class ArcMarkDiagram:
         if root.tag != "arcmark":
             raise ArcMarkError("Expected an <arcmark> root element.")
         version = root.get("version")
-        if not version:
-            raise ArcMarkError("The <arcmark> element requires a version.")
-        diagram = root.find("diagram")
-        if diagram is None or not diagram.get("title"):
+        if version != STANDARD_VERSION:
+            raise ArcMarkError(f"Unsupported ArcMark version: {version or 'missing'}. Expected {STANDARD_VERSION}.")
+        diagrams = root.findall("diagram")
+        if len(diagrams) != 1 or not diagrams[0].get("title"):
             raise ArcMarkError("Expected a <diagram> with a title.")
+        diagram = diagrams[0]
         nodes_element = diagram.find("nodes")
         if nodes_element is None:
             raise ArcMarkError("A diagram requires a <nodes> element.")
         nodes: list[ArcMarkNode] = []
-        allowed_kinds = {"entity", "service", "event"}
         for element in nodes_element.findall("node"):
             attrs = element.attrib
             missing = [name for name in ("id", "name", "kind", "x", "y") if not attrs.get(name)]
             if missing:
                 raise ArcMarkError(f"Node is missing required attribute(s): {', '.join(missing)}.")
-            if attrs["kind"] not in allowed_kinds:
+            if attrs["kind"] not in NODE_KINDS:
                 raise ArcMarkError(f"Unsupported node kind: {attrs['kind']}.")
             try:
                 x, y = float(attrs["x"]), float(attrs["y"])
@@ -84,19 +88,22 @@ class ArcMarkDiagram:
             if any(not field.name or not field.type for field in fields):
                 raise ArcMarkError(f"Node {attrs['id']} has a field missing a name or type.")
             nodes.append(ArcMarkNode(attrs["id"], attrs["name"], attrs["kind"], x, y, fields))
+        if not nodes:
+            raise ArcMarkError("A diagram requires at least one node.")
         ids = {node.id for node in nodes}
         if len(ids) != len(nodes):
             raise ArcMarkError("Node IDs must be unique.")
         relationships_element = diagram.find("relationships")
         relationships: list[ArcMarkRelationship] = []
-        if relationships_element is not None:
-            for element in relationships_element.findall("relationship"):
-                from_id, to_id, relation_type = element.get("from"), element.get("to"), element.get("type")
-                if not from_id or not to_id or not relation_type:
-                    raise ArcMarkError("Every relationship requires from, to, and type attributes.")
-                if from_id not in ids or to_id not in ids:
-                    raise ArcMarkError(f"Relationship {relation_type} references an unknown node.")
-                relationships.append(ArcMarkRelationship(from_id, to_id, relation_type))
+        if relationships_element is None:
+            raise ArcMarkError("A diagram requires a <relationships> element.")
+        for element in relationships_element.findall("relationship"):
+            from_id, to_id, relation_type = element.get("from"), element.get("to"), element.get("type")
+            if not from_id or not to_id or not relation_type:
+                raise ArcMarkError("Every relationship requires from, to, and type attributes.")
+            if from_id not in ids or to_id not in ids:
+                raise ArcMarkError(f"Relationship {relation_type} references an unknown node.")
+            relationships.append(ArcMarkRelationship(from_id, to_id, relation_type))
         return cls(diagram.attrib["title"], tuple(nodes), tuple(relationships), version)
 
     def to_svg(self) -> str:

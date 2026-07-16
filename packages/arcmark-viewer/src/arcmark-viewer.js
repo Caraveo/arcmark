@@ -1,19 +1,58 @@
 const COLORS = { entity: "#23b8d4", service: "#8b5cf6", event: "#f59e0b" };
+const STANDARD_VERSION = "1.0.0";
+const NODE_KINDS = new Set(["entity", "service", "event"]);
 
-/** Parse an ArcMark `.arc` XML document into a portable display model. */
+function requiredAttribute(element, name, context) {
+  const value = element.getAttribute(name);
+  if (!value) throw new Error(`${context} requires a ${name} attribute.`);
+  return value;
+}
+
+function coordinate(element, name, nodeID) {
+  const value = requiredAttribute(element, name, `Node ${nodeID}`);
+  const number = Number(value);
+  if (!Number.isFinite(number)) throw new Error(`Node ${nodeID} has a non-numeric ${name} coordinate.`);
+  return number;
+}
+
+/** Parse and validate an ArcMark Standard v1.0.0 `.arc` document. */
 export function parseArcMark(xml) {
   const doc = new DOMParser().parseFromString(xml, "application/xml");
   if (doc.querySelector("parsererror")) throw new Error("The ArcMark document is not valid XML.");
-  if (doc.documentElement?.tagName !== "arcmark") throw new Error("Expected an ArcMark document with an <arcmark> root.");
-  const diagram = doc.querySelector("diagram");
-  if (!diagram) throw new Error("The ArcMark document has no <diagram>.");
-  const nodes = [...diagram.querySelectorAll(":scope > nodes > node")].map((element) => ({
-    id: element.getAttribute("id"), name: element.getAttribute("name") || "Untitled",
-    kind: element.getAttribute("kind") || "entity", x: Number(element.getAttribute("x")) || 0,
-    y: Number(element.getAttribute("y")) || 0,
-    fields: [...element.querySelectorAll(":scope > field")].map((field) => ({ name: field.getAttribute("name") || "field", type: field.getAttribute("type") || "Any" }))
-  }));
-  return { title: diagram.getAttribute("title") || "ArcMark Diagram", nodes, relationships: [...diagram.querySelectorAll(":scope > relationships > relationship")].map((e) => ({ from: e.getAttribute("from"), to: e.getAttribute("to"), type: e.getAttribute("type") || "relates to" })) };
+  const root = doc.documentElement;
+  if (root?.tagName !== "arcmark") throw new Error("Expected an ArcMark document with an <arcmark> root.");
+  const version = requiredAttribute(root, "version", "The <arcmark> element");
+  if (version !== STANDARD_VERSION) throw new Error(`Unsupported ArcMark version ${version}. Expected ${STANDARD_VERSION}.`);
+  const diagrams = [...root.querySelectorAll(":scope > diagram")];
+  if (diagrams.length !== 1) throw new Error("An ArcMark document requires exactly one <diagram>.");
+  const diagram = diagrams[0];
+  const title = requiredAttribute(diagram, "title", "The <diagram> element");
+  const nodesElement = diagram.querySelector(":scope > nodes");
+  if (!nodesElement) throw new Error("A diagram requires a <nodes> element.");
+  const nodes = [...nodesElement.querySelectorAll(":scope > node")].map((element) => {
+    const id = requiredAttribute(element, "id", "A node");
+    const name = requiredAttribute(element, "name", `Node ${id}`);
+    const kind = requiredAttribute(element, "kind", `Node ${id}`);
+    if (!NODE_KINDS.has(kind)) throw new Error(`Node ${id} has an unsupported kind: ${kind}.`);
+    const fields = [...element.querySelectorAll(":scope > field")].map((field) => ({
+      name: requiredAttribute(field, "name", `A field on node ${id}`),
+      type: requiredAttribute(field, "type", `A field on node ${id}`)
+    }));
+    return { id, name, kind, x: coordinate(element, "x", id), y: coordinate(element, "y", id), fields };
+  });
+  if (!nodes.length) throw new Error("A diagram requires at least one node.");
+  const nodeIDs = new Set(nodes.map((node) => node.id));
+  if (nodeIDs.size !== nodes.length) throw new Error("Node IDs must be unique.");
+  const relationshipsElement = diagram.querySelector(":scope > relationships");
+  if (!relationshipsElement) throw new Error("A diagram requires a <relationships> element.");
+  const relationships = [...relationshipsElement.querySelectorAll(":scope > relationship")].map((element) => {
+    const from = requiredAttribute(element, "from", "A relationship");
+    const to = requiredAttribute(element, "to", "A relationship");
+    const type = requiredAttribute(element, "type", "A relationship");
+    if (!nodeIDs.has(from) || !nodeIDs.has(to)) throw new Error(`Relationship ${type} references an unknown node.`);
+    return { from, to, type };
+  });
+  return { title, version, nodes, relationships };
 }
 
 function esc(value) { return String(value).replace(/[&<>'"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[c])); }
